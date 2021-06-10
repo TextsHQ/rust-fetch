@@ -22,7 +22,11 @@ impl Jar {
         Ok(JsBox::new(&mut cx, RefCell::new(Self::new())))
     }
 
-    pub fn js_add_cookie_str(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    pub fn containerize(jar: ReqwestJar) -> RefCell<Jar> {
+        RefCell::new(Self(Some(jar)))
+    }
+
+    pub fn js_add_cookie_str(mut cx: FunctionContext) -> JsResult<BoxedJar> {
         // Cookie is a string of kv pair "foo=bar"
         let cookie = cx.argument::<JsString>(0)?.value(&mut cx);
         let url = cx.argument::<JsString>(1)?.value(&mut cx);
@@ -36,6 +40,9 @@ impl Jar {
         // TODO: Ret error instead of unwrap
         jar.add_cookie_str(&cookie, &Url::parse(&url).unwrap());
 
-        Ok(cx.undefined())
+        Ok(JsBox::new(
+            &mut cx,
+            Self::containerize(jar),
+        ))
     }
 }

@@ -1,7 +1,19 @@
-const { Builder } = require('../lib');
+const { Jar, Builder } = require('../lib');
 
-test('Builds a client w/ user agent', () => {
-    let client = new Builder()
-        .setUserAgent('Glub Glub')
-        .build();
+describe('Build client from builder', () => {
+    test('w/ user agent', () => {
+        let client = new Builder()
+            .setUserAgent('Glub Glub')
+            .build();
+    });
+
+    test('w/ jar', () => {
+        let jar = new Jar();
+
+        jar.addCookieStr('foo=bar; Domain=something', 'https://zhenyangli.me');
+
+        let client = new Builder()
+            .setJar(jar)
+            .build();
+    })
 });
