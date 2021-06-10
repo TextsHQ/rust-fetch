@@ -60,3 +60,13 @@ test('Request headers', async () => {
     expect(body.headers.Lemon).toBe('strawberry');
 });
 
+test('Request User Agent', async () => {
+    let ret = await client.request('https://httpbin.org/user-agent');
+
+    expect(ret.status).toBe(200);
+
+    let body = JSON.parse(ret.data);
+
+    expect(body['user-agent']).toBe('Glub Glub');
+});
+
