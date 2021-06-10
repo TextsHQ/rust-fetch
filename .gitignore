@@ -1,0 +1,8 @@
+# Rust builds
+/target
+
+# JS deps
+node_modules
+
+# Cargo artifact copy
+*.node

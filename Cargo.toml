@@ -1,0 +1,25 @@
+[package]
+name = "rust-fetch"
+version = "0.1.0"
+authors = ["rumblefrog <contact@zhenyangli.me>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+
+[dependencies.tokio]
+version = "1"
+features = ["rt-multi-thread"]
+
+[dependencies.reqwest]
+version = "0.11"
+default-features = false
+features = ["rustls-tls", "cookies", "gzip", "brotli"]
+
+[dependencies.neon]
+git = "https://github.com/indutny/neon"
+branch = "feature/shared-event-queue"
+default-features = false
+features = ["napi-6", "event-queue-api", "try-catch-api"]
