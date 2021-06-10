@@ -11,6 +11,7 @@
     "devDependencies": {
         "@types/jest": "^26.0.23",
         "cargo-cp-artifact": "^0.1",
-        "jest": "^27.0.4"
+        "jest": "^27.0.4",
+        "tough-cookie": "^4.0.0"
     }
 }
