@@ -131,7 +131,7 @@ impl Client {
         if let Some(data) = payload.data {
             let val = cx.string(data);
 
-            obj.set(cx, "data", val)?;
+            obj.set(cx, "body", val)?;
         }
 
         let status = cx.number(payload.status);

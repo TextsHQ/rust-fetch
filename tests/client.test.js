@@ -13,7 +13,7 @@ test('Fetch JSON document', async () => {
 
     expect(ret.status).toBe(200);
     expect(ret.httpVersion).toBe('HTTP/2.0');
-    expect(JSON.parse(ret.data)).toBeDefined();
+    expect(JSON.parse(ret.body)).toBeDefined();
 });
 
 describe('Compressions', () => {
@@ -54,7 +54,7 @@ test('Request headers', async () => {
 
     expect(ret.status).toBe(200);
 
-    let body = JSON.parse(ret.data);
+    let body = JSON.parse(ret.body);
 
     expect(body.headers.Foo).toBe('bar');
     expect(body.headers.Lemon).toBe('strawberry');
@@ -65,7 +65,7 @@ test('Request User Agent', async () => {
 
     expect(ret.status).toBe(200);
 
-    let body = JSON.parse(ret.data);
+    let body = JSON.parse(ret.body);
 
     expect(body['user-agent']).toBe('Glub Glub');
 });
