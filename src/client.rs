@@ -144,7 +144,6 @@ impl Client {
         Ok(obj)
     }
 
-
     pub fn js_request(mut cx: FunctionContext) -> JsResult<JsUndefined> {
         let url = cx.argument::<JsString>(0)?.value(&mut cx);
         let args = cx.argument::<JsObject>(1)?;
@@ -163,7 +162,9 @@ impl Client {
 
         let mut builder = this.client.request(method, url);
 
-        let headers = args.get(&mut cx, "headers")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+        let headers = args
+            .get(&mut cx, "headers")?
+            .downcast_or_throw::<JsObject, _>(&mut cx)?;
         let headers = Self::map_jsobject(&mut cx, headers)?;
         let headers: HeaderMap = match (&headers).try_into() {
             Ok(v) => v,
@@ -175,7 +176,9 @@ impl Client {
         let body = Self::map_body(&mut cx, body)?;
         builder = builder.body(body);
 
-        let obj = args.get(&mut cx, "query")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+        let obj = args
+            .get(&mut cx, "query")?
+            .downcast_or_throw::<JsObject, _>(&mut cx)?;
         let query = Self::map_jsobject(&mut cx, obj)?;
         builder = builder.query(&query);
 
