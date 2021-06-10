@@ -23,3 +23,7 @@ git = "https://github.com/indutny/neon"
 branch = "feature/shared-event-queue"
 default-features = false
 features = ["napi-6", "event-queue-api", "try-catch-api"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1

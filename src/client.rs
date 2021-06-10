@@ -83,7 +83,7 @@ impl Client {
                 let headers = res
                     .headers()
                     .iter()
-                    .filter(|(_name, val)| val.to_str().is_ok())
+                    .filter(|(_name, val)| val.to_str().is_ok()) // FIXME: This may be seen as a quirk if non-ascii headers are omitted
                     .map(|(name, val)| (name.as_str().to_owned(), val.to_str().unwrap().to_owned()))
                     .collect::<Vec<(String, String)>>();
 
@@ -114,10 +114,9 @@ impl Client {
             let h = JsObject::new(cx);
 
             for (k, v) in payload.headers {
-                let key = cx.string(k);
                 let val = cx.string(v);
 
-                obj.set(cx, key, val)?;
+                h.set(cx, k.as_ref(), val)?;
             }
 
             h
@@ -145,17 +144,13 @@ impl Client {
         Ok(obj)
     }
 
+
     pub fn js_request(mut cx: FunctionContext) -> JsResult<JsUndefined> {
-        let args = cx.argument::<JsObject>(0)?;
-        let callback = cx.argument::<JsFunction>(1)?.root(&mut cx);
+        let url = cx.argument::<JsString>(0)?.value(&mut cx);
+        let args = cx.argument::<JsObject>(1)?;
+        let callback = cx.argument::<JsFunction>(2)?.root(&mut cx);
 
         let this = cx.this().downcast_or_throw::<JsBox<Self>, _>(&mut cx)?;
-
-        let url = args
-            .get(&mut cx, "url")?
-            .downcast::<JsString, _>(&mut cx)
-            .or_throw(&mut cx)?
-            .value(&mut cx);
 
         let method = Method::from_str(
             &args
@@ -168,30 +163,21 @@ impl Client {
 
         let mut builder = this.client.request(method, url);
 
-        if let Ok(headers) = args.get(&mut cx, "headers") {
-            let headers = headers.downcast_or_throw::<JsObject, _>(&mut cx)?;
-            let headers = Self::map_jsobject(&mut cx, headers)?;
+        let headers = args.get(&mut cx, "headers")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+        let headers = Self::map_jsobject(&mut cx, headers)?;
+        let headers: HeaderMap = match (&headers).try_into() {
+            Ok(v) => v,
+            Err(e) => cx.throw_error(format!("Invalid headers: {}", e))?,
+        };
+        builder = builder.headers(headers);
 
-            let headers: HeaderMap = match (&headers).try_into() {
-                Ok(v) => v,
-                Err(e) => cx.throw_error(format!("Invalid headers: {}", e))?,
-            };
+        let body = args.get(&mut cx, "body")?;
+        let body = Self::map_body(&mut cx, body)?;
+        builder = builder.body(body);
 
-            builder = builder.headers(headers);
-        }
-
-        if let Ok(body) = args.get(&mut cx, "body") {
-            let body = Self::map_body(&mut cx, body)?;
-
-            builder = builder.body(body);
-        }
-
-        if let Ok(query) = args.get(&mut cx, "query") {
-            let obj = query.downcast_or_throw::<JsObject, _>(&mut cx)?;
-            let query = Self::map_jsobject(&mut cx, obj)?;
-
-            builder = builder.query(&query);
-        }
+        let obj = args.get(&mut cx, "query")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+        let query = Self::map_jsobject(&mut cx, obj)?;
+        builder = builder.query(&query);
 
         let queue = cx.channel();
 

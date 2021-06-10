@@ -6,9 +6,10 @@
     "scripts": {
         "build": "cargo-cp-artifact -nc index.node -- cargo build --release --message-format=json-render-diagnostics",
         "install": "yarn run build",
-        "test": "mocha"
+        "test": "jest"
     },
     "devDependencies": {
+        "@types/jest": "^26.0.23",
         "cargo-cp-artifact": "^0.1",
         "jest": "^27.0.4"
     }
