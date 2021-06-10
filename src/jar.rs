@@ -5,21 +5,21 @@ use neon::prelude::*;
 use reqwest::cookie::Jar as ReqwestJar;
 use reqwest::Url;
 
-pub struct Jar(pub(crate) RefCell<ReqwestJar>);
+pub struct Jar(pub(crate) Option<ReqwestJar>);
 
-pub type BoxedJar = JsBox<Jar>;
+pub type BoxedJar = JsBox<RefCell<Jar>>;
 
 impl Finalize for Jar {}
 
 impl Jar {
     pub fn new() -> Self {
-        Self(RefCell::new(ReqwestJar::default()))
+        Self(Some(ReqwestJar::default()))
     }
 }
 
 impl Jar {
     pub fn js_new(mut cx: FunctionContext) -> JsResult<BoxedJar> {
-        Ok(JsBox::new(&mut cx, Self::new()))
+        Ok(JsBox::new(&mut cx, RefCell::new(Self::new())))
     }
 
     pub fn js_add_cookie_str(mut cx: FunctionContext) -> JsResult<JsUndefined> {
@@ -29,7 +29,9 @@ impl Jar {
 
         let boxed = cx.this().downcast_or_throw::<BoxedJar, _>(&mut cx)?;
 
-        let jar = boxed.0.borrow();
+        let mut rm = boxed.borrow_mut();
+
+        let jar = rm.0.take().unwrap();
 
         // TODO: Ret error instead of unwrap
         jar.add_cookie_str(&cookie, &Url::parse(&url).unwrap());

@@ -7,6 +7,7 @@ use tokio::runtime::Runtime;
 use reqwest::ClientBuilder;
 
 use crate::client::Client;
+use crate::jar::BoxedJar;
 
 pub struct Builder(Option<ClientBuilder>);
 
@@ -42,6 +43,24 @@ impl Builder {
         Ok(JsBox::new(
             &mut cx,
             Self::containerize(cb.user_agent(user_agent)),
+        ))
+    }
+
+    pub fn js_jar(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let jar = cx.argument::<BoxedJar>(0)?;
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let cb = rm.0.take().unwrap();
+
+        let mut jar_rm = jar.borrow_mut();
+        let jar = jar_rm.0.take().unwrap();
+
+        Ok(JsBox::new(
+            &mut cx,
+            Self::containerize(cb.cookie_provider(std::sync::Arc::new(jar))),
         ))
     }
 
