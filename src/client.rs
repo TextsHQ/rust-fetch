@@ -137,7 +137,7 @@ impl Client {
         let status = cx.number(payload.status);
         let http_version = cx.string(payload.http_version);
 
-        obj.set(cx, "status", status)?;
+        obj.set(cx, "statusCode", status)?;
         obj.set(cx, "httpVersion", http_version)?;
         obj.set(cx, "headers", headers)?;
 
