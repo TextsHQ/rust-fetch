@@ -182,6 +182,12 @@ impl Client {
         let query = Self::map_jsobject(&mut cx, obj)?;
         builder = builder.query(&query);
 
+        let obj = args
+            .get(&mut cx, "form")?
+            .downcast_or_throw::<JsObject, _>(&mut cx)?;
+        let form = Self::map_jsobject(&mut cx, obj)?;
+        builder = builder.form(&form);
+
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
