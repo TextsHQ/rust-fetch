@@ -69,3 +69,18 @@ test('Request User Agent', async () => {
 
     expect(body['user-agent']).toBe('Glub Glub');
 });
+
+test('Request form', async () => {
+    let ret = await client.request('https://httpbin.org/post', {
+        method: 'POST',
+        form: {
+            foo: 'bar',
+        },
+    });
+
+    expect(ret.statusCode).toBe(200);
+
+    let body = JSON.parse(ret.body);
+
+    expect(body.form.foo).toBe('bar');
+});

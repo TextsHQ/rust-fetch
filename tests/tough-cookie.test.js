@@ -31,8 +31,8 @@ test('Request w/ tough jar', async () => {
 
     let ret = await client.request('https://httpbin.org/cookies');
 
-    let json = JSON.parse(ret.body);
+    let body= JSON.parse(ret.body);
 
     expect(ret.statusCode).toBe(200);
-    expect(json.cookies.ct0).toBe('csrfToken');
+    expect(body.cookies.ct0).toBe('csrfToken');
 });
