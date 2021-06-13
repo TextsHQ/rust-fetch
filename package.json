@@ -1,14 +1,15 @@
 {
     "name": "rust-fetch",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Rust HTTP wrapper for JS",
-    "main": "lib/index.js",
+    "main": "dist/index.js",
     "scripts": {
-        "build": "cargo-cp-artifact -nc index.node -- cargo build --release --message-format=json-render-diagnostics",
+        "build": "tsc && cargo-cp-artifact -nc index.node -- cargo build --release --message-format=json-render-diagnostics",
         "install": "yarn run build",
         "test": "jest"
     },
     "devDependencies": {
+        "@textshq/platform-sdk": "link:../platform-sdk",
         "@types/jest": "^26.0.23",
         "cargo-cp-artifact": "^0.1",
         "jest": "^27.0.4",

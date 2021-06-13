@@ -1,4 +1,5 @@
-const { Builder } = require('../lib');
+const { CookieJar } = require('tough-cookie');
+const { Client, Builder } = require('../dist');
 
 let client;
 
@@ -83,4 +84,24 @@ test('Request form', async () => {
     let body = JSON.parse(ret.body);
 
     expect(body.form.foo).toBe('bar');
+});
+
+test('Request cookie handling', async () => {
+    let jar = new CookieJar();
+
+    let ret = await client.request('https://httpbin.org/cookies/set', {
+        cookieJar: jar,
+        query: {
+            foo: 'bar',
+            lemon: 'juice',
+            strawberry: 'blueberry',
+        },
+    });
+
+    expect(ret.statusCode).toBe(302);
+    expect(ret.headers['set-cookie']).toHaveLength(3);
+
+    const cookieStr = jar.getCookieStringSync('https://httpbin.org');
+
+    expect(cookieStr).toBe('foo=bar; lemon=juice; strawberry=blueberry');
 });

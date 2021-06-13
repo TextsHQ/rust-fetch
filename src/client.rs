@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::convert::TryInto;
 use std::str::FromStr;
 
@@ -18,7 +19,7 @@ pub struct Client {
 pub struct CallbackPayload {
     status: f64,
     http_version: String,
-    headers: Vec<(String, String)>,
+    headers: HashMap<String, Vec<String>>,
     content_length: Option<f64>,
     data: Option<String>,
 }
@@ -80,12 +81,22 @@ impl Client {
                 let status = res.status().as_u16() as f64;
                 let http_version = format!("{:?}", res.version());
 
-                let headers = res
-                    .headers()
-                    .iter()
-                    .filter(|(_name, val)| val.to_str().is_ok()) // FIXME: This may be seen as a quirk if non-ascii headers are omitted
-                    .map(|(name, val)| (name.as_str().to_owned(), val.to_str().unwrap().to_owned()))
-                    .collect::<Vec<(String, String)>>();
+                let mut headers: HashMap<String, Vec<String>> = HashMap::new();
+
+                for (name, val) in res.headers() {
+                    // Maybe FIXME: This may be seen as a quirk if non-ascii headers are omitted
+                    if let Ok(val_str) = val.to_str() {
+
+                        let name = name.to_string();
+
+                        match headers.entry(name) {
+                            Entry::Occupied(o) => o.into_mut().push(val_str.to_string()),
+                            Entry::Vacant(v) => {
+                                v.insert(vec![val_str.to_string()]);
+                            },
+                        };
+                    }
+                }
 
                 let content_length = res.content_length().map(|i| i as f64);
 
@@ -114,7 +125,13 @@ impl Client {
             let h = JsObject::new(cx);
 
             for (k, v) in payload.headers {
-                let val = cx.string(v);
+                let val = JsArray::new(cx,  v.len() as u32);
+
+                for (i, entry) in v.iter().enumerate() {
+                    let z = cx.string(entry);
+
+                    val.set(cx, i as u32, z)?;
+                }
 
                 h.set(cx, k.as_ref(), val)?;
             }
