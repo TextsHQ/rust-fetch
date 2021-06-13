@@ -9,8 +9,8 @@
         "test": "jest"
     },
     "devDependencies": {
-        "@textshq/platform-sdk": "link:../platform-sdk",
         "@types/jest": "^26.0.23",
+        "@types/tough-cookie": "^4.0.0",
         "cargo-cp-artifact": "^0.1",
         "jest": "^27.0.4",
         "tough-cookie": "^4.0.0"

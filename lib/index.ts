@@ -1,6 +1,5 @@
 import { promisify } from 'util';
 import { CookieJar } from 'tough-cookie';
-import { FetchOptions } from '@textshq/platform-sdk';
 
 const {
     clientRequest,
@@ -12,6 +11,22 @@ const {
 
 const requestPromise = promisify(clientRequest);
 
+export interface RequestOptions {
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE' | 'OPTIONS' | 'TRACE';
+
+    headers?: Record<string, string>;
+
+    query?: Record<string, number | string>,
+
+    searchParams?: Record<string, number | string>;
+
+    form?: Record<string, number | string>;
+
+    body?: string | Buffer;
+
+    cookieJar?: CookieJar;
+};
+
 export interface Response {
     contentLength: number;
 
@@ -21,6 +36,13 @@ export interface Response {
 
     httpVersion: string;
 
+    /**
+     * Headers.
+     *
+     * Header names are lower-case, and conforms to RFC 2616 case insensitive.
+     *
+     * Each header may have more than one value in the value array.
+     */
     headers: Record<string, string[]>,
 }
 
@@ -31,10 +53,7 @@ export class Client {
         this.#client = client;
     }
 
-    public async request(url: string, args?: FetchOptions & {
-        query?: Record<string, number | string>,
-        cookieJar?: CookieJar,
-    }): Promise<Response> {
+    public async request(url: string, args?: RequestOptions): Promise<Response> {
         args = args ?? {};
         args.method = args.method ?? 'GET';
         args.headers = args.headers ?? {};
