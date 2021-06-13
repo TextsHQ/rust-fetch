@@ -1,12 +1,10 @@
 const { CookieJar } = require('tough-cookie');
-const { Client, Builder } = require('../dist');
+const { Builder } = require('../dist');
 
 let client;
 
 beforeAll(()  => {
-    client = new Builder()
-        .setUserAgent('Glub Glub')
-        .build();
+    client = new Builder().build();
 });
 
 test('Fetch JSON document', async () => {
@@ -61,16 +59,6 @@ test('Request headers', async () => {
     expect(body.headers.Lemon).toBe('strawberry');
 });
 
-test('Request User Agent', async () => {
-    let ret = await client.request('https://httpbin.org/user-agent');
-
-    expect(ret.statusCode).toBe(200);
-
-    let body = JSON.parse(ret.body);
-
-    expect(body['user-agent']).toBe('Glub Glub');
-});
-
 test('Request form', async () => {
     let ret = await client.request('https://httpbin.org/post', {
         method: 'POST',
@@ -104,4 +92,14 @@ test('Request cookie handling', async () => {
     const cookieStr = jar.getCookieStringSync('https://httpbin.org');
 
     expect(cookieStr).toHaveLength(42);
+});
+
+test('Response binary data', async() => {
+    let ret = await client.request('https://httpbin.org/image/webp', {
+        responseType: 'BINARY',
+    });
+
+    expect(ret.statusCode).toBe(200);
+    expect(ret.body.constructor.name).toBe('Buffer');
+    expect(ret.body.length).toBeGreaterThan(10000);
 });

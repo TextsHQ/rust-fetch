@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 
@@ -8,6 +8,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
+bytes = "1"
 
 [dependencies.tokio]
 version = "1"

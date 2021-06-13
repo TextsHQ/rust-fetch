@@ -31,8 +31,8 @@ impl Builder {
         Ok(JsBox::new(&mut cx, RefCell::new(Self::new())))
     }
 
-    pub fn js_user_agent(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
-        let user_agent = cx.argument::<JsString>(0)?.value(&mut cx);
+    pub fn js_connect_timeout(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let duration_seconds = cx.argument::<JsNumber>(0)?.value(&mut cx);
 
         let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
 
@@ -42,7 +42,52 @@ impl Builder {
 
         Ok(JsBox::new(
             &mut cx,
-            Self::containerize(cb.user_agent(user_agent)),
+            Self::containerize(cb.connect_timeout(std::time::Duration::from_secs(duration_seconds as u64))),
+        ))
+    }
+
+    pub fn js_request_timeout(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let duration_seconds = cx.argument::<JsNumber>(0)?.value(&mut cx);
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let cb = rm.0.take().unwrap();
+
+        Ok(JsBox::new(
+            &mut cx,
+            Self::containerize(cb.timeout(std::time::Duration::from_secs(duration_seconds as u64))),
+        ))
+    }
+
+    pub fn js_https_only(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let only = cx.argument::<JsBoolean>(0)?.value(&mut cx);
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let cb = rm.0.take().unwrap();
+
+        Ok(JsBox::new(
+            &mut cx,
+            Self::containerize(cb.https_only(only)),
+        ))
+    }
+
+    pub fn js_http2_adaptive_window(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let enabled = cx.argument::<JsBoolean>(0)?.value(&mut cx);
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let cb = rm.0.take().unwrap();
+
+        Ok(JsBox::new(
+            &mut cx,
+            Self::containerize(cb.http2_adaptive_window(enabled)),
         ))
     }
 

@@ -5,7 +5,10 @@ const {
     clientRequest,
 
     builderNew,
-    builderUserAgent,
+    builderConnectTimeout,
+    builderRequestTimeout,
+    builderHttpsOnly,
+    builderHttps2AdaptiveWindow,
     builderBuild,
 } = require('../index.node');
 
@@ -22,6 +25,13 @@ export interface RequestOptions {
 
     form?: Record<string, number | string>;
 
+    /**
+     * Whether the returned body should be string or a Buffer.
+     *
+     * Defaults to TEXT
+     */
+    responseType?: 'TEXT' | 'BINARY';
+
     body?: string | Buffer;
 
     cookieJar?: CookieJar;
@@ -30,7 +40,7 @@ export interface RequestOptions {
 export interface Response {
     contentLength: number;
 
-    body: string;
+    body: string | Buffer;
 
     statusCode: number;
 
@@ -56,6 +66,7 @@ export class Client {
     public async request(url: string, args?: RequestOptions): Promise<Response> {
         args = args ?? {};
         args.method = args.method ?? 'GET';
+        args.responseType = args.responseType ?? 'TEXT';
         args.headers = args.headers ?? {};
         args.body = args.body ?? '';
         args.form = args.form ?? {};
@@ -86,8 +97,26 @@ export class Builder {
         this.#builder = builderNew();
     }
 
-    public setUserAgent(userAgent: string): Builder {
-        this.#builder = builderUserAgent.call(this.#builder, userAgent);
+    public connectTimeout(seconds: number): Builder {
+        this.#builder = builderConnectTimeout.call(this.#builder, seconds);
+
+        return this;
+    }
+
+    public requestTimeout(seconds: number): Builder {
+        this.#builder = builderRequestTimeout.call(this.#builder, seconds);
+
+        return this;
+    }
+
+    public httpsOnly(only: boolean): Builder {
+        this.#builder = builderHttpsOnly.call(this.#builder, only);
+
+        return this;
+    }
+
+    public https2AdaptiveWindow(enabled: boolean): Builder {
+        this.#builder = builderHttps2AdaptiveWindow.call(this.#builder, enabled);
 
         return this;
     }

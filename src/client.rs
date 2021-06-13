@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 use std::str::FromStr;
 
+use bytes::Bytes;
+
 use neon::prelude::*;
 
 use tokio::runtime::Runtime;
@@ -16,12 +18,39 @@ pub struct Client {
     pub(crate) client: ReqwestClient,
 }
 
+pub enum ResponseType {
+    Text,
+    Binary,
+}
+
+impl FromStr for ResponseType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BINARY" => Ok(ResponseType::Binary),
+
+            // Defaults to text, even for invalid cases.
+            _ => Ok(ResponseType::Text),
+        }
+    }
+}
+
+pub enum DataType {
+    Text(Option<String>),
+    Binary(Option<Bytes>),
+}
+
 pub struct CallbackPayload {
     status: f64,
+
     http_version: String,
+
     headers: HashMap<String, Vec<String>>,
+
     content_length: Option<f64>,
-    data: Option<String>,
+
+    data: DataType,
 }
 
 impl Finalize for Client {}
@@ -75,6 +104,7 @@ impl Client {
     #[inline]
     pub async fn map_response(
         res: Result<Response, reqwest::Error>,
+        response_type: ResponseType,
     ) -> Result<CallbackPayload, reqwest::Error> {
         match res {
             Ok(res) => {
@@ -99,7 +129,10 @@ impl Client {
 
                 let content_length = res.content_length().map(|i| i as f64);
 
-                let data = res.text().await.ok();
+                let data = match response_type {
+                    ResponseType::Text => DataType::Text(res.text().await.ok()),
+                    ResponseType::Binary => DataType::Binary(res.bytes().await.ok())
+                };
 
                 Ok(CallbackPayload {
                     status,
@@ -144,10 +177,26 @@ impl Client {
             obj.set(cx, "contentLength", val)?;
         }
 
-        if let Some(data) = payload.data {
-            let val = cx.string(data);
+        match payload.data {
+            DataType::Text(v) if v.is_some() => {
+                let val = cx.string(v.unwrap());
 
-            obj.set(cx, "body", val)?;
+                obj.set(cx, "body", val)?;
+            },
+
+            DataType::Binary(v) if v.is_some() => {
+                let val = v.unwrap();
+
+                let mut buf = JsBuffer::new(cx, val.len() as u32)?;
+
+                cx.borrow_mut(&mut buf, |data| {
+                    data.as_mut_slice::<u8>().copy_from_slice(&val);
+                });
+
+                obj.set(cx, "body", buf)?;
+            }
+
+            _ => {}
         }
 
         let status = cx.number(payload.status);
@@ -204,12 +253,20 @@ impl Client {
         let form = Self::map_jsobject(&mut cx, obj)?;
         builder = builder.form(&form);
 
+        let response_type = ResponseType::from_str(
+            &args
+                .get(&mut cx, "responseType")?
+                .downcast_or_throw::<JsString, _>(&mut cx)?
+                .value(&mut cx)
+        )
+        .unwrap();
+
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
             let res = builder.send().await;
 
-            let res = Self::map_response(res).await;
+            let res = Self::map_response(res, response_type).await;
 
             queue.send(|mut cx| {
                 let ret = match res {
