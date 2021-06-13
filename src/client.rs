@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 use std::convert::TryInto;
 use std::str::FromStr;
 
@@ -86,14 +86,13 @@ impl Client {
                 for (name, val) in res.headers() {
                     // Maybe FIXME: This may be seen as a quirk if non-ascii headers are omitted
                     if let Ok(val_str) = val.to_str() {
-
                         let name = name.to_string();
 
                         match headers.entry(name) {
                             Entry::Occupied(o) => o.into_mut().push(val_str.to_string()),
                             Entry::Vacant(v) => {
                                 v.insert(vec![val_str.to_string()]);
-                            },
+                            }
                         };
                     }
                 }
@@ -125,7 +124,7 @@ impl Client {
             let h = JsObject::new(cx);
 
             for (k, v) in payload.headers {
-                let val = JsArray::new(cx,  v.len() as u32);
+                let val = JsArray::new(cx, v.len() as u32);
 
                 for (i, entry) in v.iter().enumerate() {
                     let z = cx.string(entry);

@@ -4,8 +4,8 @@ use neon::prelude::*;
 
 use tokio::runtime::Runtime;
 
-use reqwest::ClientBuilder;
 use reqwest::redirect::Policy;
+use reqwest::ClientBuilder;
 
 use crate::client::Client;
 
