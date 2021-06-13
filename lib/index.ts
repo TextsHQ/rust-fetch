@@ -52,8 +52,8 @@ export class Client {
         const res = await requestPromise.call(this.#client, url, args);
 
         for (const [k, v] of Object.entries(res.headers))
-            for (const item of v as string[])
-                if (args.cookieJar && k === 'set-cookie' )
+            if (args.cookieJar && k === 'set-cookie')
+                for (const item of v as string[])
                     args.cookieJar.setCookieSync(item, url);
 
         return res;
