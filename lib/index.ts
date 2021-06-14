@@ -31,9 +31,9 @@ export interface RequestOptions {
     /**
      * Whether the returned body should be string or a Buffer.
      *
-     * Defaults to TEXT
+     * Defaults to text
      */
-    responseType?: 'TEXT' | 'BINARY';
+    responseType?: 'text' | 'binary';
 
     body?: string | Buffer;
 
@@ -69,7 +69,7 @@ export class Client {
     public async request(url: string, args?: RequestOptions): Promise<Response> {
         args = args ?? {};
         args.method = args.method ?? 'GET';
-        args.responseType = args.responseType ?? 'TEXT';
+        args.responseType = args.responseType ?? 'text';
         args.query = {...args.query, ...args.searchParams };
 
         if (args.cookieJar) {

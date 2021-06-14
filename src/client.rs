@@ -28,7 +28,7 @@ impl FromStr for ResponseType {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "BINARY" => Ok(ResponseType::Binary),
+            "binary" => Ok(ResponseType::Binary),
 
             // Defaults to text, even for invalid cases.
             _ => Ok(ResponseType::Text),
