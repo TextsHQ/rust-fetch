@@ -70,6 +70,7 @@ test('Request form', async () => {
         method: 'POST',
         form: {
             foo: 'bar',
+            test: 2,
         },
     });
 

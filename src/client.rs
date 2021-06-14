@@ -68,11 +68,15 @@ impl Client {
         for i in 0..names.len(cx) {
             let n = names.get(cx, i)?.downcast::<JsString, _>(cx).or_throw(cx)?;
 
-            let v = obj
-                .get(cx, n)?
-                .downcast::<JsString, _>(cx)
-                .or_throw(cx)?
-                .value(cx);
+            let v = obj.get(cx, n)?;
+
+            let v = if v.is_a::<JsString, _>(cx) {
+                v.downcast_or_throw::<JsString, _>(cx)?.value(cx)
+            } else {
+                let i = v.downcast_or_throw::<JsNumber, _>(cx)?.value(cx);
+
+                (i as u32).to_string()
+            };
 
             map.insert(n.value(cx), v);
         }
