@@ -3,10 +3,6 @@ import * as FormData from 'form-data';
 import { CookieJar } from 'tough-cookie';
 
 const {
-    formNew,
-    formText,
-    formBuffer,
-
     clientRequest,
 
     builderNew,

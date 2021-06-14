@@ -98,6 +98,8 @@ impl Builder {
         let mut cb = rm.0.take().unwrap();
 
         cb = cb.tcp_keepalive(std::time::Duration::from_secs(60));
+
+        // Prevent loss of headers such as set-cookies from redirects
         cb = cb.redirect(Policy::none());
 
         let client = cb.build().unwrap();
