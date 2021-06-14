@@ -15,6 +15,28 @@ const {
 
 const requestPromise = promisify(clientRequest);
 
+export interface ClientOptions {
+    /**
+     * Timeout in seconds for the connection phase.
+     */
+    connectTimeout: number,
+
+    /**
+     * Timeout in seconds from start connecting to response body finished.
+     */
+    requestTimeout: number,
+
+    /**
+     * Https only
+     */
+    httpsOnly: boolean,
+
+    /**
+     * Use adaptive window size for https2
+     */
+    https2AdaptiveWindow: boolean,
+}
+
 export interface RequestOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE' | 'OPTIONS' | 'TRACE';
 
@@ -62,8 +84,26 @@ export interface Response {
 export class Client {
     #client: object;
 
-    constructor(client: object) {
-        this.#client = client;
+    constructor(options: ClientOptions) {
+        let builder = builderNew();
+
+        if (options.connectTimeout) {
+            builder = builderConnectTimeout.call(builder, options.connectTimeout);
+        }
+
+        if (options.requestTimeout) {
+            builder = builderRequestTimeout.call(builder, options.requestTimeout);
+        }
+
+        if (options.httpsOnly) {
+            builder = builderHttpsOnly.call(builder, options.httpsOnly);
+        }
+
+        if (options.https2AdaptiveWindow) {
+            builder = builderHttps2AdaptiveWindow.call(builder, options.https2AdaptiveWindow);
+        }
+
+        this.#client = builderBuild.call(builder);
     }
 
     public async request(url: string, args?: RequestOptions): Promise<Response> {
@@ -92,45 +132,5 @@ export class Client {
                     args.cookieJar.setCookieSync(item, url);
 
         return res;
-    }
-}
-
-export class Builder {
-    #builder?: object;
-
-    constructor() {
-        this.#builder = builderNew();
-    }
-
-    public connectTimeout(seconds: number): Builder {
-        this.#builder = builderConnectTimeout.call(this.#builder, seconds);
-
-        return this;
-    }
-
-    public requestTimeout(seconds: number): Builder {
-        this.#builder = builderRequestTimeout.call(this.#builder, seconds);
-
-        return this;
-    }
-
-    public httpsOnly(only: boolean): Builder {
-        this.#builder = builderHttpsOnly.call(this.#builder, only);
-
-        return this;
-    }
-
-    public https2AdaptiveWindow(enabled: boolean): Builder {
-        this.#builder = builderHttps2AdaptiveWindow.call(this.#builder, enabled);
-
-        return this;
-    }
-
-    public build(): Client {
-        const client = new Client(builderBuild.call(this.#builder));
-
-        this.#builder = undefined;
-
-        return client;
     }
 }

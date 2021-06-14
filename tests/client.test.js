@@ -1,11 +1,16 @@
 const FormData = require('form-data');
 const { CookieJar } = require('tough-cookie');
-const { Form, Builder } = require('../dist');
+const { Client } = require('../dist');
 
 let client;
 
 beforeAll(()  => {
-    client = new Builder().build();
+    client = new Client({
+        connectTimeout: 5,
+        requestTimeout: 5,
+        httpsOnly: true,
+        https2AdaptiveWindow: true,
+    });
 });
 
 test('Fetch JSON document', async () => {
@@ -97,7 +102,7 @@ test('Request cookie handling', async () => {
 
 test('Request multi-part', async () => {
     let ret = await client.request('https://httpbin.org/image/webp', {
-        responseType: 'BINARY',
+        responseType: 'binary',
     });
 
     expect(ret.statusCode).toBe(200);
@@ -119,7 +124,7 @@ test('Request multi-part', async () => {
 
 test('Response binary data', async() => {
     let ret = await client.request('https://httpbin.org/image/webp', {
-        responseType: 'BINARY',
+        responseType: 'binary',
     });
 
     expect(ret.statusCode).toBe(200);
