@@ -1,5 +1,6 @@
+const FormData = require('form-data');
 const { CookieJar } = require('tough-cookie');
-const { Builder } = require('../dist');
+const { Form, Builder } = require('../dist');
 
 let client;
 
@@ -92,6 +93,28 @@ test('Request cookie handling', async () => {
     const cookieStr = jar.getCookieStringSync('https://httpbin.org');
 
     expect(cookieStr).toHaveLength(42);
+});
+
+test('Request multi-part', async () => {
+    let ret = await client.request('https://httpbin.org/image/webp', {
+        responseType: 'BINARY',
+    });
+
+    expect(ret.statusCode).toBe(200);
+    expect(ret.body.constructor.name).toBe('Buffer');
+    expect(ret.body.length).toBeGreaterThan(10000);
+
+    let form = new FormData();
+
+    form.append('foo', 'bar')
+    form.append('blizzy', ret.body);
+
+    let ret_2 = await client.request('https://httpbin.org/anything', {
+        method: 'POST',
+        multipart: form,
+    });
+
+    expect(ret_2.body.length).toBeGreaterThan(10000);
 });
 
 test('Response binary data', async() => {

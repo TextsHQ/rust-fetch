@@ -14,7 +14,10 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("builderConnectTimeout", Builder::js_connect_timeout)?;
     cx.export_function("builderRequestTimeout", Builder::js_request_timeout)?;
     cx.export_function("builderHttpsOnly", Builder::js_https_only)?;
-    cx.export_function("builderHttps2AdaptiveWindow", Builder::js_http2_adaptive_window)?;
+    cx.export_function(
+        "builderHttps2AdaptiveWindow",
+        Builder::js_http2_adaptive_window,
+    )?;
     cx.export_function("builderBuild", Builder::js_build)?;
 
     Ok(())

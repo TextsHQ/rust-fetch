@@ -59,7 +59,7 @@ impl Client {
     #[inline]
     pub fn map_jsobject(
         cx: &mut FunctionContext,
-        obj: Handle<JsObject>,
+        obj: &Handle<JsObject>,
     ) -> NeonResult<HashMap<String, String>> {
         let mut map = HashMap::new();
 
@@ -80,16 +80,31 @@ impl Client {
         Ok(map)
     }
 
+    #[inline]
+    pub fn object_keys(cx: &mut FunctionContext, obj: &Handle<JsObject>) -> NeonResult<HashMap<String, ()>> {
+        let mut map = HashMap::new();
+
+        let names = obj.get_own_property_names(cx)?;
+
+        for i in 0..names.len(cx) {
+            let n = names.get(cx, i)?.downcast::<JsString, _>(cx).or_throw(cx)?;
+
+            map.insert(n.value(cx), ());
+        }
+
+        Ok(map)
+    }
+
     /// Maps & check a JS type to `Body`.
     /// A body could be either a string or a JsBuffer if provided.
     #[inline]
     pub fn map_body(cx: &mut FunctionContext, body: Handle<JsValue>) -> NeonResult<Body> {
         if body.is_a::<JsString, _>(cx) {
-            let body = body.downcast::<JsString, _>(cx).or_throw(cx)?.value(cx);
+            let body = body.downcast_or_throw::<JsString, _>(cx)?.value(cx);
 
             Ok(Body::from(body))
         } else {
-            let body = body.downcast::<JsBuffer, _>(cx).or_throw(cx)?;
+            let body = body.downcast_or_throw::<JsBuffer, _>(cx)?;
 
             cx.borrow(&body, |data| {
                 let v: Vec<u8> = Vec::from(data.as_slice());
@@ -131,7 +146,7 @@ impl Client {
 
                 let data = match response_type {
                     ResponseType::Text => DataType::Text(res.text().await.ok()),
-                    ResponseType::Binary => DataType::Binary(res.bytes().await.ok())
+                    ResponseType::Binary => DataType::Binary(res.bytes().await.ok()),
                 };
 
                 Ok(CallbackPayload {
@@ -147,6 +162,7 @@ impl Client {
         }
     }
 
+    #[inline]
     pub fn build_ret<'c>(
         cx: &mut TaskContext<'c>,
         payload: CallbackPayload,
@@ -182,7 +198,7 @@ impl Client {
                 let val = cx.string(v.unwrap());
 
                 obj.set(cx, "body", val)?;
-            },
+            }
 
             DataType::Binary(v) if v.is_some() => {
                 let val = v.unwrap();
@@ -216,48 +232,51 @@ impl Client {
 
         let this = cx.this().downcast_or_throw::<JsBox<Self>, _>(&mut cx)?;
 
+        let keys = Self::object_keys(&mut cx, &args)?;
+
         let method = Method::from_str(
             &args
                 .get(&mut cx, "method")?
-                .downcast::<JsString, _>(&mut cx)
-                .or_throw(&mut cx)?
+                .downcast_or_throw::<JsString, _>(&mut cx)?
                 .value(&mut cx),
         )
         .unwrap();
 
         let mut builder = this.client.request(method, url);
 
-        let headers = args
-            .get(&mut cx, "headers")?
-            .downcast_or_throw::<JsObject, _>(&mut cx)?;
-        let headers = Self::map_jsobject(&mut cx, headers)?;
-        let headers: HeaderMap = match (&headers).try_into() {
-            Ok(v) => v,
-            Err(e) => cx.throw_error(format!("Invalid headers: {}", e))?,
-        };
-        builder = builder.headers(headers);
+        if keys.contains_key("headers") {
+            let headers = args.get(&mut cx, "headers")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let headers = Self::map_jsobject(&mut cx, &headers)?;
+            let headers: HeaderMap = match (&headers).try_into() {
+                Ok(v) => v,
+                Err(e) => cx.throw_error(format!("Invalid headers: {}", e))?,
+            };
+            builder = builder.headers(headers);
+        }
 
-        let body = args.get(&mut cx, "body")?;
-        let body = Self::map_body(&mut cx, body)?;
-        builder = builder.body(body);
+        if keys.contains_key("body") {
+            let body = args.get(&mut cx, "body")?;
+            let body = Self::map_body(&mut cx, body)?;
+            builder = builder.body(body);
+        }
 
-        let obj = args
-            .get(&mut cx, "query")?
-            .downcast_or_throw::<JsObject, _>(&mut cx)?;
-        let query = Self::map_jsobject(&mut cx, obj)?;
-        builder = builder.query(&query);
+        if keys.contains_key("query") {
+            let query = args.get(&mut cx, "query")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let query = Self::map_jsobject(&mut cx, &query)?;
+            builder = builder.query(&query);
+        }
 
-        let obj = args
-            .get(&mut cx, "form")?
-            .downcast_or_throw::<JsObject, _>(&mut cx)?;
-        let form = Self::map_jsobject(&mut cx, obj)?;
-        builder = builder.form(&form);
+        if keys.contains_key("form") {
+            let form = args.get(&mut cx, "form")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let form = Self::map_jsobject(&mut cx, &form)?;
+            builder = builder.form(&form);
+        }
 
         let response_type = ResponseType::from_str(
             &args
                 .get(&mut cx, "responseType")?
                 .downcast_or_throw::<JsString, _>(&mut cx)?
-                .value(&mut cx)
+                .value(&mut cx),
         )
         .unwrap();
 

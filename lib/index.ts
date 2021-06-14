@@ -1,7 +1,12 @@
 import { promisify } from 'util';
+import * as FormData from 'form-data';
 import { CookieJar } from 'tough-cookie';
 
 const {
+    formNew,
+    formText,
+    formBuffer,
+
     clientRequest,
 
     builderNew,
@@ -24,6 +29,8 @@ export interface RequestOptions {
     searchParams?: Record<string, number | string>;
 
     form?: Record<string, number | string>;
+
+    multipart?: FormData,
 
     /**
      * Whether the returned body should be string or a Buffer.
@@ -67,16 +74,18 @@ export class Client {
         args = args ?? {};
         args.method = args.method ?? 'GET';
         args.responseType = args.responseType ?? 'TEXT';
-        args.headers = args.headers ?? {};
-        args.body = args.body ?? '';
-        args.form = args.form ?? {};
-        args.query = args.query ?? {};
-        args.query = args.searchParams ? {...args.query, ...args.searchParams } : args.query;
+        args.query = {...args.query, ...args.searchParams };
 
         if (args.cookieJar) {
             const cookie = args.cookieJar.getCookieStringSync(url);
 
             args.headers = { ...args.headers, Cookie: cookie };
+        }
+
+        if (args.multipart) {
+            args.headers = args.multipart.getHeaders(args.headers);
+
+            args.body = args.multipart.getBuffer();
         }
 
         const res = await requestPromise.call(this.#client, url, args);

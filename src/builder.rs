@@ -42,7 +42,9 @@ impl Builder {
 
         Ok(JsBox::new(
             &mut cx,
-            Self::containerize(cb.connect_timeout(std::time::Duration::from_secs(duration_seconds as u64))),
+            Self::containerize(
+                cb.connect_timeout(std::time::Duration::from_secs(duration_seconds as u64)),
+            ),
         ))
     }
 
@@ -70,10 +72,7 @@ impl Builder {
 
         let cb = rm.0.take().unwrap();
 
-        Ok(JsBox::new(
-            &mut cx,
-            Self::containerize(cb.https_only(only)),
-        ))
+        Ok(JsBox::new(&mut cx, Self::containerize(cb.https_only(only))))
     }
 
     pub fn js_http2_adaptive_window(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
