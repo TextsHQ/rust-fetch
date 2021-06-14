@@ -19,22 +19,22 @@ export interface ClientOptions {
     /**
      * Timeout in seconds for the connection phase.
      */
-    connectTimeout: number,
+    connectTimeout?: number,
 
     /**
      * Timeout in seconds from start connecting to response body finished.
      */
-    requestTimeout: number,
+    requestTimeout?: number,
 
     /**
      * Https only
      */
-    httpsOnly: boolean,
+    httpsOnly?: boolean,
 
     /**
      * Use adaptive window size for https2
      */
-    https2AdaptiveWindow: boolean,
+    https2AdaptiveWindow?: boolean,
 }
 
 export interface RequestOptions {
@@ -84,8 +84,10 @@ export interface Response {
 export class Client {
     #client: object;
 
-    constructor(options: ClientOptions) {
+    constructor(options?: ClientOptions) {
         let builder = builderNew();
+
+        options = options ?? {};
 
         if (options.connectTimeout) {
             builder = builderConnectTimeout.call(builder, options.connectTimeout);
