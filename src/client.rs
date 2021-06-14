@@ -98,19 +98,21 @@ impl Client {
     /// Maps & check a JS type to `Body`.
     /// A body could be either a string or a JsBuffer if provided.
     #[inline]
-    pub fn map_body(cx: &mut FunctionContext, body: Handle<JsValue>) -> NeonResult<Body> {
+    pub fn map_body(cx: &mut FunctionContext, body: Handle<JsValue>) -> NeonResult<Option<Body>> {
         if body.is_a::<JsString, _>(cx) {
             let body = body.downcast_or_throw::<JsString, _>(cx)?.value(cx);
 
-            Ok(Body::from(body))
-        } else {
+            Ok(Some(Body::from(body)))
+        } else if body.is_a::<JsBuffer, _>(cx) {
             let body = body.downcast_or_throw::<JsBuffer, _>(cx)?;
 
             cx.borrow(&body, |data| {
                 let v: Vec<u8> = Vec::from(data.as_slice());
 
-                Ok(Body::from(v))
+                Ok(Some(Body::from(v)))
             })
+        } else {
+            Ok(None)
         }
     }
 
@@ -256,8 +258,10 @@ impl Client {
 
         if keys.contains_key("body") {
             let body = args.get(&mut cx, "body")?;
-            let body = Self::map_body(&mut cx, body)?;
-            builder = builder.body(body);
+
+            if let Some(body) = Self::map_body(&mut cx, body)? {
+                builder = builder.body(body);
+            }
         }
 
         if keys.contains_key("query") {
