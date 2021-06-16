@@ -62,10 +62,10 @@ export interface RequestOptions {
     cookieJar?: CookieJar;
 };
 
-export interface Response {
+export interface Response<T> {
     contentLength: number;
 
-    body: string | Buffer;
+    body: T;
 
     statusCode: number;
 
@@ -108,8 +108,7 @@ export class Client {
         this.#client = builderBuild.call(builder);
     }
 
-    public async request(url: string, args?: RequestOptions): Promise<Response> {
-        args = args ?? {};
+    public async request<T>(url: string, args: RequestOptions = {}): Promise<Response<T>> {
         args.method = args.method ?? 'GET';
         args.responseType = args.responseType ?? 'text';
         args.query = {...args.query, ...args.searchParams };
