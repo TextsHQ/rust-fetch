@@ -86,7 +86,7 @@ test('Request cookie handling', async () => {
 
     let ret = await client.request('https://httpbin.org/cookies/set', {
         cookieJar: jar,
-        query: {
+        searchParams: {
             foo: 'bar',
             lemon: 'juice',
             strawberry: 'blueberry',

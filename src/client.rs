@@ -268,10 +268,10 @@ impl Client {
             }
         }
 
-        if keys.contains_key("query") {
-            let query = args.get(&mut cx, "query")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
-            let query = Self::map_jsobject(&mut cx, &query)?;
-            builder = builder.query(&query);
+        if keys.contains_key("searchParams") {
+            let search_params = args.get(&mut cx, "searchParams")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let search_params = Self::map_jsobject(&mut cx, &search_params)?;
+            builder = builder.query(&search_params);
         }
 
         if keys.contains_key("form") {

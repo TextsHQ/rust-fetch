@@ -42,8 +42,9 @@ export interface RequestOptions {
 
     headers?: Record<string, string>;
 
-    query?: Record<string, number | string>,
-
+    /**
+     * URL search parameters, alias to query.
+     */
     searchParams?: Record<string, number | string>;
 
     form?: Record<string, number | string>;
@@ -111,7 +112,6 @@ export class Client {
     public async request<T>(url: string, args: RequestOptions = {}): Promise<Response<T>> {
         args.method = args.method ?? 'GET';
         args.responseType = args.responseType ?? 'text';
-        args.query = {...args.query, ...args.searchParams };
 
         if (args.cookieJar) {
             const cookie = args.cookieJar.getCookieStringSync(url);
