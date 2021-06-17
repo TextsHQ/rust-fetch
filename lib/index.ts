@@ -130,8 +130,7 @@ export class Client {
             args.headers = { ...args.headers, Cookie: cookie };
         }
 
-        // @ts-ignore
-        if (typeof args.body?.getBuffer === 'function') {
+        if (args.body?.constructor.name === 'FormData') {
             args.headers = (<FormData> args.body).getHeaders(args.headers);
 
             args.body = (<FormData> args.body).getBuffer();
