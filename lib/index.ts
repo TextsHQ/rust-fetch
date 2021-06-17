@@ -49,8 +49,6 @@ export interface RequestOptions {
 
     form?: Record<string, number | string>;
 
-    multipart?: FormData,
-
     /**
      * Whether the returned body should be string or a Buffer.
      *
@@ -58,7 +56,7 @@ export interface RequestOptions {
      */
     responseType?: 'text' | 'binary';
 
-    body?: string | Buffer;
+    body?: string | Buffer | FormData;
 
     cookieJar?: CookieJar;
 };
@@ -119,10 +117,11 @@ export class Client {
             args.headers = { ...args.headers, Cookie: cookie };
         }
 
-        if (args.multipart) {
-            args.headers = args.multipart.getHeaders(args.headers);
+        // @ts-ignore
+        if (typeof args.body?.getBuffer === 'function') {
+            args.headers = (<FormData> args.body).getHeaders(args.headers);
 
-            args.body = args.multipart.getBuffer();
+            args.body = (<FormData> args.body).getBuffer();
         }
 
         const res = await requestPromise.call(this.#client, url, args);

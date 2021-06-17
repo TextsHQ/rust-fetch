@@ -117,7 +117,7 @@ test('Request multi-part', async () => {
 
     let ret_2 = await client.request('https://httpbin.org/anything', {
         method: 'POST',
-        multipart: form,
+        body: form,
     });
 
     expect(ret_2.body.length).toBeGreaterThan(10000);
