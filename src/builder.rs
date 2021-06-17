@@ -75,6 +75,23 @@ impl Builder {
         Ok(JsBox::new(&mut cx, Self::containerize(cb.https_only(only))))
     }
 
+    pub fn js_redirect_limit(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let limit = cx.argument::<JsNumber>(0)?.value(&mut cx) as usize;
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let cb = rm.0.take().unwrap();
+
+        let policy = match limit {
+            0 => Policy::none(),
+            _ => Policy::limited(limit)
+        };
+
+        Ok(JsBox::new(&mut cx, Self::containerize(cb.redirect(policy))))
+    }
+
     pub fn js_http2_adaptive_window(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
         let enabled = cx.argument::<JsBoolean>(0)?.value(&mut cx);
 
@@ -98,9 +115,6 @@ impl Builder {
         let mut cb = rm.0.take().unwrap();
 
         cb = cb.tcp_keepalive(std::time::Duration::from_secs(60));
-
-        // Prevent loss of headers such as set-cookies from redirects
-        cb = cb.redirect(Policy::none());
 
         let client = cb.build().unwrap();
 

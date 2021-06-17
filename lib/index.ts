@@ -8,6 +8,7 @@ const {
     builderNew,
     builderConnectTimeout,
     builderRequestTimeout,
+    builderRedirectLimit,
     builderHttpsOnly,
     builderHttps2AdaptiveWindow,
     builderBuild,
@@ -19,22 +20,29 @@ export interface ClientOptions {
     /**
      * Timeout in seconds for the connection phase.
      */
-    connectTimeout?: number,
+    connectTimeout?: number;
 
     /**
      * Timeout in seconds from start connecting to response body finished.
      */
-    requestTimeout?: number,
+    requestTimeout?: number;
+
+    /**
+     * Maximum redirects allowed.
+     *
+     * A limit of 0 for no redirect allowed.
+     */
+    redirectLimit?: number;
 
     /**
      * Https only
      */
-    httpsOnly?: boolean,
+    httpsOnly?: boolean;
 
     /**
      * Use adaptive window size for https2
      */
-    https2AdaptiveWindow?: boolean,
+    https2AdaptiveWindow?: boolean;
 }
 
 export interface RequestOptions {
@@ -94,6 +102,11 @@ export class Client {
 
         if (options.requestTimeout) {
             builder = builderRequestTimeout.call(builder, options.requestTimeout);
+        }
+
+        // JS is type juggling 0 to false
+        if (options.redirectLimit !== undefined) {
+            builder = builderRedirectLimit.call(builder, options.redirectLimit);
         }
 
         if (options.httpsOnly) {

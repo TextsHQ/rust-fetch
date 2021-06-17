@@ -8,6 +8,7 @@ beforeAll(()  => {
     client = new Client({
         connectTimeout: 5,
         requestTimeout: 5,
+        redirectLimit: 0,
         httpsOnly: true,
         https2AdaptiveWindow: true,
     });
