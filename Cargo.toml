@@ -1,9 +1,9 @@
 [package]
 name = "rust-fetch"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
-rust = "1.52"
+rust = "1.52" # Requires nightly as of now
 
 [lib]
 crate-type = ["cdylib"]
