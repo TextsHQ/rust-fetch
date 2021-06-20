@@ -66,6 +66,15 @@ test('Request headers', async () => {
     expect(body.headers.Lemon).toBe('strawberry');
 });
 
+test('Response headers', async () => {
+    let ret = await client.request('https://httpbin.org/response-headers?foo=bar&foo=test&bar=foo');
+
+    expect(ret.statusCode).toBe(200);
+
+    expect(ret.headers.foo).toHaveLength(2);
+    expect(ret.headers.bar).toBe('foo');
+});
+
 test('Request form', async () => {
     let ret = await client.request('https://httpbin.org/post', {
         method: 'POST',

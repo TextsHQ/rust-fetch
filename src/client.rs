@@ -1,4 +1,3 @@
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::str::FromStr;
@@ -41,12 +40,17 @@ pub enum DataType {
     Binary(Option<Bytes>),
 }
 
+pub enum HeaderEntry {
+    Single(String),
+    Multiple(Vec<String>),
+}
+
 pub struct CallbackPayload {
     status: f64,
 
     http_version: String,
 
-    headers: HashMap<String, Vec<String>>,
+    headers: HashMap<String, HeaderEntry>,
 
     content_length: Option<f64>,
 
@@ -85,7 +89,10 @@ impl Client {
     }
 
     #[inline]
-    pub fn object_keys(cx: &mut FunctionContext, obj: &Handle<JsObject>) -> NeonResult<HashMap<String, ()>> {
+    pub fn object_keys(
+        cx: &mut FunctionContext,
+        obj: &Handle<JsObject>,
+    ) -> NeonResult<HashMap<String, ()>> {
         let mut map = HashMap::new();
 
         let names = obj.get_own_property_names(cx)?;
@@ -132,20 +139,24 @@ impl Client {
                 let status = res.status().as_u16() as f64;
                 let http_version = format!("{:?}", res.version());
 
-                let mut headers: HashMap<String, Vec<String>> = HashMap::new();
+                let mut headers: HashMap<String, HeaderEntry> = HashMap::new();
 
-                for (name, val) in res.headers() {
-                    // Maybe FIXME: This may be seen as a quirk if non-ascii headers are omitted
-                    if let Ok(val_str) = val.to_str() {
-                        let name = name.to_string();
+                for key in res.headers().keys() {
+                    let value_entries = res
+                        .headers()
+                        .get_all(key)
+                        .iter()
+                        .filter(|v| v.to_str().is_ok()) // Maybe FIXME: This may be seen as a quirk if non-ascii headers are omitted
+                        .map(|v| v.to_str().unwrap().to_string())
+                        .collect::<Vec<String>>();
 
-                        match headers.entry(name) {
-                            Entry::Occupied(o) => o.into_mut().push(val_str.to_string()),
-                            Entry::Vacant(v) => {
-                                v.insert(vec![val_str.to_string()]);
-                            }
-                        };
-                    }
+                    match value_entries.len() {
+                        1 => headers.insert(
+                            key.to_string(),
+                            HeaderEntry::Single(value_entries[0].clone()),
+                        ),
+                        _ => headers.insert(key.to_string(), HeaderEntry::Multiple(value_entries)),
+                    };
                 }
 
                 let content_length = res.content_length().map(|i| i as f64);
@@ -179,15 +190,24 @@ impl Client {
             let h = JsObject::new(cx);
 
             for (k, v) in payload.headers {
-                let val = JsArray::new(cx, v.len() as u32);
+                match v {
+                    HeaderEntry::Single(s) => {
+                        let s = cx.string(s);
 
-                for (i, entry) in v.iter().enumerate() {
-                    let z = cx.string(entry);
+                        h.set(cx, k.as_ref(), s)?;
+                    }
+                    HeaderEntry::Multiple(entries) => {
+                        let val = JsArray::new(cx, entries.len() as u32);
 
-                    val.set(cx, i as u32, z)?;
-                }
+                        for (i, entry) in entries.iter().enumerate() {
+                            let z = cx.string(entry);
 
-                h.set(cx, k.as_ref(), val)?;
+                            val.set(cx, i as u32, z)?;
+                        }
+
+                        h.set(cx, k.as_ref(), val)?;
+                    }
+                };
             }
 
             h
@@ -251,7 +271,9 @@ impl Client {
         let mut builder = this.client.request(method, url);
 
         if keys.contains_key("headers") {
-            let headers = args.get(&mut cx, "headers")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let headers = args
+                .get(&mut cx, "headers")?
+                .downcast_or_throw::<JsObject, _>(&mut cx)?;
             let headers = Self::map_jsobject(&mut cx, &headers)?;
             let headers: HeaderMap = match (&headers).try_into() {
                 Ok(v) => v,
@@ -269,13 +291,17 @@ impl Client {
         }
 
         if keys.contains_key("searchParams") {
-            let search_params = args.get(&mut cx, "searchParams")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let search_params = args
+                .get(&mut cx, "searchParams")?
+                .downcast_or_throw::<JsObject, _>(&mut cx)?;
             let search_params = Self::map_jsobject(&mut cx, &search_params)?;
             builder = builder.query(&search_params);
         }
 
         if keys.contains_key("form") {
-            let form = args.get(&mut cx, "form")?.downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let form = args
+                .get(&mut cx, "form")?
+                .downcast_or_throw::<JsObject, _>(&mut cx)?;
             let form = Self::map_jsobject(&mut cx, &form)?;
             builder = builder.form(&form);
         }

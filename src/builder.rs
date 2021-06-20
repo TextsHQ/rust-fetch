@@ -86,7 +86,7 @@ impl Builder {
 
         let policy = match limit {
             0 => Policy::none(),
-            _ => Policy::limited(limit)
+            _ => Policy::limited(limit),
         };
 
         Ok(JsBox::new(&mut cx, Self::containerize(cb.redirect(policy))))

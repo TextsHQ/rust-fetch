@@ -85,7 +85,7 @@ export interface Response<T> {
      *
      * Each header may have more than one value in the value array.
      */
-    headers: Record<string, string[]>,
+    headers: Record<string, string> | Record<string, string[]>,
 }
 
 export class Client {
