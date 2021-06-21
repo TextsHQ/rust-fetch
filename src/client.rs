@@ -79,7 +79,7 @@ impl Client {
             } else {
                 let i = v.downcast_or_throw::<JsNumber, _>(cx)?.value(cx);
 
-                (i as u32).to_string()
+                (i as u64).to_string()
             };
 
             map.insert(n.value(cx), v);
