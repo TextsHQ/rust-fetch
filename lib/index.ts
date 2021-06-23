@@ -138,10 +138,17 @@ export class Client {
 
         const res = await requestPromise.call(this.#client, url, args);
 
-        for (const [k, v] of Object.entries(res.headers))
-            if (args.cookieJar && k === 'set-cookie')
-                for (const item of v as string[])
-                    args.cookieJar.setCookieSync(item, url);
+        for (const [k, v] of Object.entries(res.headers)) {
+            if (args.cookieJar && k === 'set-cookie') {
+                if (Array.isArray(v)) {
+                    for (const item of v as string[]) {
+                        args.cookieJar.setCookieSync(item, url);
+                    }
+                } else {
+                    args.cookieJar.setCookieSync(v as string, url);
+                }
+            }
+        }
 
         return res;
     }

@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 rust = "1.52" # Requires nightly as of now
