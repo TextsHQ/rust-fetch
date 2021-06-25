@@ -112,9 +112,7 @@ impl Builder {
 
         let mut rm = boxed.borrow_mut();
 
-        let mut cb = rm.0.take().unwrap();
-
-        cb = cb.tcp_keepalive(std::time::Duration::from_secs(60));
+        let cb = rm.0.take().unwrap();
 
         let client = cb.build().unwrap();
 
