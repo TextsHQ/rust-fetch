@@ -74,15 +74,25 @@ impl Client {
 
             let v = obj.get(cx, n)?;
 
-            let v = if v.is_a::<JsString, _>(cx) {
-                v.downcast_or_throw::<JsString, _>(cx)?.value(cx)
-            } else {
-                let i = v.downcast_or_throw::<JsNumber, _>(cx)?.value(cx);
+            match v {
+                _ if v.is_a::<JsString, _>(cx) => {
+                    let r = v.downcast_or_throw::<JsString, _>(cx)?.value(cx);
 
-                (i as u64).to_string()
+                    map.insert(n.value(cx), r);
+                }
+
+                _ if v.is_a::<JsNumber, _>(cx) => {
+                    let i = v.downcast_or_throw::<JsNumber, _>(cx)?.value(cx);
+
+                    map.insert(n.value(cx), (i as u64).to_string());
+                }
+
+                _ if v.is_a::<JsObject, _>(cx) => {
+                    cx.throw_error("Object cannot be passed as a value")?;
+                }
+
+                _ => {},
             };
-
-            map.insert(n.value(cx), v);
         }
 
         Ok(map)

@@ -815,7 +815,7 @@ dependencies = [
 
 [[package]]
 name = "rust-fetch"
-version = "0.6.4"
+version = "0.6.5"
 dependencies = [
  "bytes",
  "neon",
