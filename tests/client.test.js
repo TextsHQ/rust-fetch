@@ -2,6 +2,8 @@ const FormData = require('form-data');
 const { CookieJar } = require('tough-cookie');
 const { Client } = require('../dist');
 
+jest.setTimeout(10e3);
+
 let client;
 
 beforeAll(()  => {

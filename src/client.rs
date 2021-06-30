@@ -332,20 +332,23 @@ impl Client {
             let res = Self::map_response(res, response_type).await;
 
             queue.send(|mut cx| {
-                let ret = match res {
-                    Ok(v) => v,
-                    Err(e) => cx.throw_error(format!("Request error: {}", e))?,
-                };
-
-                let ret = Self::build_ret(&mut cx, ret)?;
-
                 let cb = callback.into_inner(&mut cx);
-
                 let this = cx.undefined();
 
-                let args: Vec<Handle<JsValue>> = vec![cx.null().upcast(), ret.upcast()];
+                match res {
+                    Ok(v) => {
+                        let ret = Self::build_ret(&mut cx, v)?;
 
-                cb.call(&mut cx, this, args)?;
+                        let args: Vec<Handle<JsValue>> = vec![cx.null().upcast(), ret.upcast()];
+
+                        cb.call(&mut cx, this, args)?;
+                    },
+                    Err(e) => {
+                        let args: Vec<Handle<JsValue>> = vec![cx.error(e.to_string())?.upcast()];
+
+                        cb.call(&mut cx, this, args)?;
+                    },
+                };
 
                 Ok(())
             });
