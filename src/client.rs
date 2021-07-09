@@ -4,12 +4,14 @@ use std::str::FromStr;
 
 use bytes::Bytes;
 
+use futures_retry::{FutureRetry, RetryPolicy};
+
 use neon::prelude::*;
 
 use tokio::runtime::Runtime;
 
 use reqwest::header::HeaderMap;
-use reqwest::{Body, Client as ReqwestClient, Method, Response};
+use reqwest::{Body, Client as ReqwestClient, Error, Method, Response};
 
 pub struct Client {
     pub(crate) runtime: Runtime,
@@ -91,7 +93,7 @@ impl Client {
                     cx.throw_error("Object cannot be passed as a value")?;
                 }
 
-                _ => {},
+                _ => {}
             };
         }
 
@@ -327,7 +329,13 @@ impl Client {
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
-            let res = builder.send().await;
+            let res = FutureRetry::new(
+                || builder.try_clone().unwrap().send(),
+                Self::handle_request_retry,
+            )
+            .await
+            .map_err(|(e, _attempt)| e)
+            .map(|(r, _attempt)| r);
 
             let res = Self::map_response(res, response_type).await;
 
@@ -342,12 +350,12 @@ impl Client {
                         let args: Vec<Handle<JsValue>> = vec![cx.null().upcast(), ret.upcast()];
 
                         cb.call(&mut cx, this, args)?;
-                    },
+                    }
                     Err(e) => {
                         let args: Vec<Handle<JsValue>> = vec![cx.error(e.to_string())?.upcast()];
 
                         cb.call(&mut cx, this, args)?;
-                    },
+                    }
                 };
 
                 Ok(())
@@ -355,5 +363,11 @@ impl Client {
         });
 
         Ok(cx.undefined())
+    }
+
+    fn handle_request_retry(e: Error) -> RetryPolicy<Error> {
+        match e {
+            _ => RetryPolicy::ForwardError(e),
+        }
     }
 }
