@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::str::FromStr;
+use std::time::Duration;
 
 use bytes::Bytes;
 
-use futures_retry::{FutureRetry, RetryPolicy};
+use futures_retry::{ErrorHandler, FutureRetry, RetryPolicy};
 
 use neon::prelude::*;
 
@@ -12,6 +13,8 @@ use tokio::runtime::Runtime;
 
 use reqwest::header::HeaderMap;
 use reqwest::{Body, Client as ReqwestClient, Error, Method, Response};
+
+pub const RETRY_DURATION: Duration = Duration::from_millis(200);
 
 pub struct Client {
     pub(crate) runtime: Runtime,
@@ -280,6 +283,11 @@ impl Client {
         )
         .unwrap();
 
+        let attempts = args
+            .get(&mut cx, "attempts")?
+            .downcast_or_throw::<JsNumber, _>(&mut cx)?
+            .value(&mut cx) as usize;
+
         let mut builder = this.client.request(method, url);
 
         if keys.contains_key("headers") {
@@ -329,13 +337,10 @@ impl Client {
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
-            let res = FutureRetry::new(
-                || builder.try_clone().unwrap().send(),
-                Self::handle_request_retry,
-            )
-            .await
-            .map_err(|(e, _attempt)| e)
-            .map(|(r, _attempt)| r);
+            let res = FutureRetry::new(|| builder.try_clone().unwrap().send(), Attempter::new(attempts))
+                .await
+                .map_err(|(e, _attempt)| e)
+                .map(|(r, _attempt)| r);
 
             let res = Self::map_response(res, response_type).await;
 
@@ -364,9 +369,37 @@ impl Client {
 
         Ok(cx.undefined())
     }
+}
 
-    fn handle_request_retry(e: Error) -> RetryPolicy<Error> {
+pub struct Attempter {
+    attempts: usize,
+    max_attempts: usize,
+}
+
+impl Attempter {
+    pub fn new(attempts: usize) -> Self {
+        Self {
+            attempts: 0,
+            max_attempts: attempts,
+        }
+    }
+}
+
+impl ErrorHandler<Error> for Attempter {
+    type OutError = Error;
+
+    fn handle(&mut self, _attempt: usize, e: Error) -> RetryPolicy<Self::OutError> {
+        if self.attempts == self.max_attempts {
+            return RetryPolicy::ForwardError(e);
+        }
+
+        self.attempts += 1;
+
+        // TODO: Write request data into attemper to compare here.
         match e {
+            _ if e.is_connect() => RetryPolicy::WaitRetry(RETRY_DURATION),
+            _ if e.is_timeout() => RetryPolicy::WaitRetry(RETRY_DURATION),
+
             _ => RetryPolicy::ForwardError(e),
         }
     }

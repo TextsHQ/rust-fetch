@@ -51,6 +51,15 @@ export interface RequestOptions {
     headers?: Record<string, string>;
 
     /**
+     * Maximum number of attempts for request.
+     *
+     * Retries for connection errors.
+     *
+     * Default: 2
+     */
+    attempts?: number;
+
+    /**
      * URL search parameters, alias to query.
      */
     searchParams?: Record<string, number | string>;
@@ -123,6 +132,7 @@ export class Client {
     public async request<T>(url: string, args: RequestOptions = {}): Promise<Response<T>> {
         args.method = args.method ?? 'GET';
         args.responseType = args.responseType ?? 'text';
+        args.attempts = args.attempts ?? 2;
 
         if (args.cookieJar) {
             const cookie = args.cookieJar.getCookieStringSync(url);
