@@ -288,7 +288,7 @@ impl Client {
             .downcast_or_throw::<JsNumber, _>(&mut cx)?
             .value(&mut cx) as usize;
 
-        let mut builder = this.client.request(method, url);
+        let mut builder = this.client.request(method.clone(), url);
 
         if keys.contains_key("headers") {
             let headers = args
@@ -337,7 +337,7 @@ impl Client {
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
-            let res = FutureRetry::new(|| builder.try_clone().unwrap().send(), Attempter::new(attempts))
+            let res = FutureRetry::new(|| builder.try_clone().unwrap().send(), Attempter::new(method, attempts))
                 .await
                 .map_err(|(e, _attempt)| e)
                 .map(|(r, _attempt)| r);
@@ -372,13 +372,16 @@ impl Client {
 }
 
 pub struct Attempter {
+    method: Method,
+
     attempts: usize,
     max_attempts: usize,
 }
 
 impl Attempter {
-    pub fn new(attempts: usize) -> Self {
+    pub fn new(method: Method, attempts: usize) -> Self {
         Self {
+            method,
             attempts: 0,
             max_attempts: attempts,
         }
@@ -393,12 +396,25 @@ impl ErrorHandler<Error> for Attempter {
             return RetryPolicy::ForwardError(e);
         }
 
+        // https://datatracker.ietf.org/doc/html/rfc7231#section-4.2.1
+        if !self.method.is_idempotent() {
+            return RetryPolicy::ForwardError(e);
+        }
+
         self.attempts += 1;
 
-        // TODO: Write request data into attemper to compare here.
         match e {
             _ if e.is_connect() => RetryPolicy::WaitRetry(RETRY_DURATION),
             _ if e.is_timeout() => RetryPolicy::WaitRetry(RETRY_DURATION),
+            _ if e.is_status() => {
+                let status = e.status().unwrap();
+
+                // https://github.com/sindresorhus/got/#retry
+                match status.as_u16() {
+                    408 | 413 | 429 | 500 | 502 |  503 | 504 | 521 | 522 | 524 => RetryPolicy::WaitRetry(RETRY_DURATION),
+                    _ => RetryPolicy::ForwardError(e),
+                }
+            },
 
             _ => RetryPolicy::ForwardError(e),
         }
