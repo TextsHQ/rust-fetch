@@ -8,3 +8,4 @@ dist
 # Cargo artifact copy
 *.node
 build
+.DS_Store
