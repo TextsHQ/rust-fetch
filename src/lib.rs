@@ -1,3 +1,5 @@
+extern crate static_vcruntime;
+
 use neon::prelude::*;
 
 mod builder;
