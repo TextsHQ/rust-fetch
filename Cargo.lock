@@ -645,7 +645,7 @@ dependencies = [
 
 [[package]]
 name = "rust-fetch"
-version = "0.6.9"
+version = "0.6.10"
 dependencies = [
  "bytes",
  "futures-retry",
