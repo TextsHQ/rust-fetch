@@ -22,8 +22,8 @@ default-features = false
 features = ["rustls-tls", "gzip", "brotli"]
 
 [dependencies.neon]
-git = "https://github.com/indutny/neon"
-branch = "feature/shared-event-queue"
+git = "https://github.com/neon-bindings/neon"
+branch = "main"
 default-features = false
 features = ["napi-6", "event-queue-api", "try-catch-api"]
 
