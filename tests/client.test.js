@@ -1,6 +1,6 @@
 const FormData = require('form-data');
 const { CookieJar } = require('tough-cookie');
-const { Client } = require('../dist');
+const { Client, LogLevel } = require('../dist');
 
 jest.setTimeout(10e3);
 
@@ -13,6 +13,7 @@ beforeAll(()  => {
         redirectLimit: 0,
         httpsOnly: true,
         https2AdaptiveWindow: true,
+        logLevel: LogLevel.Debug,
     });
 });
 

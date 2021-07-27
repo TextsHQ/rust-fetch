@@ -7,6 +7,7 @@ use bytes::Bytes;
 
 use futures_retry::{ErrorHandler, FutureRetry, RetryPolicy};
 
+use log::{debug, trace};
 use neon::prelude::*;
 
 use tokio::runtime::Runtime;
@@ -22,6 +23,7 @@ pub struct Client {
     pub(crate) client: ReqwestClient,
 }
 
+#[derive(Debug)]
 pub enum ResponseType {
     Text,
     Binary,
@@ -288,6 +290,11 @@ impl Client {
             .downcast_or_throw::<JsNumber, _>(&mut cx)?
             .value(&mut cx) as usize;
 
+        debug!(
+            "Received {} request to {} with {} attempts",
+            &method, &url, &attempts
+        );
+
         let mut builder = this.client.request(method.clone(), url);
 
         if keys.contains_key("headers") {
@@ -299,6 +306,9 @@ impl Client {
                 Ok(v) => v,
                 Err(e) => cx.throw_error(format!("Invalid headers: {}", e))?,
             };
+
+            debug!("Request headers: {:?}", &headers);
+
             builder = builder.headers(headers);
         }
 
@@ -306,6 +316,7 @@ impl Client {
             let body = args.get(&mut cx, "body")?;
 
             if let Some(body) = Self::map_body(&mut cx, body)? {
+                trace!("Request body: {:?}", &body);
                 builder = builder.body(body);
             }
         }
@@ -315,6 +326,9 @@ impl Client {
                 .get(&mut cx, "searchParams")?
                 .downcast_or_throw::<JsObject, _>(&mut cx)?;
             let search_params = Self::map_jsobject(&mut cx, &search_params)?;
+
+            debug!("Request queries: {:?}", &search_params);
+
             builder = builder.query(&search_params);
         }
 
@@ -323,6 +337,9 @@ impl Client {
                 .get(&mut cx, "form")?
                 .downcast_or_throw::<JsObject, _>(&mut cx)?;
             let form = Self::map_jsobject(&mut cx, &form)?;
+
+            debug!("Request form: {:?}", form);
+
             builder = builder.form(&form);
         }
 
@@ -334,13 +351,24 @@ impl Client {
         )
         .unwrap();
 
+        debug!("Request response type: {:?}", &response_type);
+
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
-            let res = FutureRetry::new(|| builder.try_clone().unwrap().send(), Attempter::new(method, attempts))
-                .await
-                .map_err(|(e, _attempt)| e)
-                .map(|(r, _attempt)| r);
+            let res = FutureRetry::new(
+                || builder.try_clone().unwrap().send(),
+                Attempter::new(method, attempts),
+            )
+            .await
+            .map_err(|(e, attempts)| {
+                debug!("Request error after {} attempts: {}", attempts, e);
+                e
+            })
+            .map(|(r, attempts)| {
+                debug!("Request successful after {} attempts", attempts);
+                r
+            });
 
             let res = Self::map_response(res, response_type).await;
 
@@ -354,10 +382,14 @@ impl Client {
 
                         let args: Vec<Handle<JsValue>> = vec![cx.null().upcast(), ret.upcast()];
 
+                        debug!("Called back with successful response");
+
                         cb.call(&mut cx, this, args)?;
                     }
                     Err(e) => {
                         let args: Vec<Handle<JsValue>> = vec![cx.error(e.to_string())?.upcast()];
+
+                        debug!("Called back with error");
 
                         cb.call(&mut cx, this, args)?;
                     }
@@ -393,30 +425,50 @@ impl ErrorHandler<Error> for Attempter {
 
     fn handle(&mut self, _attempt: usize, e: Error) -> RetryPolicy<Self::OutError> {
         if self.attempts == self.max_attempts {
+            debug!(
+                "Reached max attempts of {}, forwarding error",
+                &self.max_attempts
+            );
             return RetryPolicy::ForwardError(e);
         }
 
         // https://datatracker.ietf.org/doc/html/rfc7231#section-4.2.1
         if !self.method.is_idempotent() {
+            debug!("Request method is non-idempotent, forwarding error");
             return RetryPolicy::ForwardError(e);
         }
 
         self.attempts += 1;
 
         match e {
-            _ if e.is_connect() => RetryPolicy::WaitRetry(RETRY_DURATION),
-            _ if e.is_timeout() => RetryPolicy::WaitRetry(RETRY_DURATION),
+            _ if e.is_connect() => {
+                debug!("Request connection error, retrying");
+                RetryPolicy::WaitRetry(RETRY_DURATION)
+            }
+            _ if e.is_timeout() => {
+                debug!("Request timeout error, retrying");
+                RetryPolicy::WaitRetry(RETRY_DURATION)
+            }
             _ if e.is_status() => {
                 let status = e.status().unwrap();
 
                 // https://github.com/sindresorhus/got/#retry
                 match status.as_u16() {
-                    408 | 413 | 429 | 500 | 502 |  503 | 504 | 521 | 522 | 524 => RetryPolicy::WaitRetry(RETRY_DURATION),
-                    _ => RetryPolicy::ForwardError(e),
+                    408 | 413 | 429 | 500 | 502 | 503 | 504 | 521 | 522 | 524 => {
+                        debug!("Request status error: {}, retrying", &status);
+                        RetryPolicy::WaitRetry(RETRY_DURATION)
+                    }
+                    _ => {
+                        debug!("Request status error: {}, forwarding error", &status);
+                        RetryPolicy::ForwardError(e)
+                    }
                 }
-            },
+            }
 
-            _ => RetryPolicy::ForwardError(e),
+            _ => {
+                debug!("Request error, forwarding error: {}", &e);
+                RetryPolicy::ForwardError(e)
+            }
         }
     }
 }

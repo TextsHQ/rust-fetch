@@ -11,6 +11,7 @@ const {
     builderRedirectLimit,
     builderHttpsOnly,
     builderHttps2AdaptiveWindow,
+    builderLogLevel,
     builderBuild,
 } = require('../index.node');
 
@@ -43,6 +44,23 @@ export interface ClientOptions {
      * Use adaptive window size for https2
      */
     https2AdaptiveWindow?: boolean;
+
+    /**
+     * Logging level.
+     *
+     * Defaults to info.
+     *
+     */
+    logLevel?: LogLevel;
+}
+
+export enum LogLevel {
+    Off = 0,
+    Error = 1,
+    Warn = 2,
+    Info = 3,
+    Debug = 4,
+    Trace = 5,
 }
 
 export interface RequestOptions {
@@ -104,6 +122,7 @@ export class Client {
         let builder = builderNew();
 
         options = options ?? {};
+        options.logLevel = options.logLevel ?? LogLevel.Info;
 
         if (options.connectTimeout) {
             builder = builderConnectTimeout.call(builder, options.connectTimeout);
@@ -125,6 +144,8 @@ export class Client {
         if (options.https2AdaptiveWindow) {
             builder = builderHttps2AdaptiveWindow.call(builder, options.https2AdaptiveWindow);
         }
+
+        builder = builderLogLevel.call(builder, options.logLevel);
 
         this.#client = builderBuild.call(builder);
     }
