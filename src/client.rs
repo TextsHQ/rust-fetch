@@ -5,6 +5,8 @@ use std::time::Duration;
 
 use bytes::Bytes;
 
+use simplelog::SimpleLogger;
+
 use futures_retry::{ErrorHandler, FutureRetry, RetryPolicy};
 
 use neon::prelude::*;
@@ -21,7 +23,7 @@ pub struct Client {
 
     pub(crate) client: ReqwestClient,
 
-    pub(crate) verbose: bool,
+    pub(crate) logger: Box<SimpleLogger>,
 }
 
 pub enum ResponseType {

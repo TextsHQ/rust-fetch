@@ -21,7 +21,7 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
         "builderHttps2AdaptiveWindow",
         Builder::js_http2_adaptive_window,
     )?;
-    cx.export_function("builderVerbose", Builder::js_verbose)?;
+    cx.export_function("builderLogLevel", Builder::js_log_level)?;
     cx.export_function("builderBuild", Builder::js_build)?;
 
     Ok(())

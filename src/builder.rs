@@ -1,5 +1,7 @@
 use std::cell::RefCell;
 
+use simplelog::{LevelFilter, SimpleLogger, Config};
+
 use neon::prelude::*;
 
 use tokio::runtime::Runtime;
@@ -14,14 +16,14 @@ pub struct Builder(Option<BuilderInner>);
 pub struct BuilderInner {
     client: ClientBuilder,
 
-    verbose: bool,
+    log_level: LevelFilter,
 }
 
 impl BuilderInner {
     pub fn new() -> BuilderInner {
         Self {
             client: ClientBuilder::new(),
-            verbose: false,
+            log_level: LevelFilter::Info,
         }
     }
 }
@@ -121,16 +123,29 @@ impl Builder {
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
     }
 
-    pub fn js_verbose(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
-        let enabled = cx.argument::<JsBoolean>(0)?.value(&mut cx);
+    pub fn js_log_level(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let level = cx.argument::<JsNumber>(0)?.value(&mut cx) as u64;
 
         let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
 
         let mut rm = boxed.borrow_mut();
 
         let mut cb = rm.0.take().unwrap();
-        cb.client = cb.client.connection_verbose(enabled);
-        cb.verbose = enabled;
+
+        cb.log_level = match level {
+            0 => LevelFilter::Off,
+            1 => LevelFilter::Error,
+            2 => LevelFilter::Warn,
+            3 => LevelFilter::Info,
+            4 => LevelFilter::Debug,
+            5 => {
+                cb.client = cb.client.connection_verbose(true);
+
+                LevelFilter::Trace
+            },
+
+            _ => LevelFilter::Info,
+        };
 
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
     }
@@ -149,7 +164,7 @@ impl Builder {
             Client {
                 runtime: Runtime::new().unwrap(),
                 client,
-                verbose: cb.verbose,
+                logger: SimpleLogger::new(cb.log_level, Config::default()),
             },
         ))
     }
