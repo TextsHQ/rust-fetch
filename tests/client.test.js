@@ -13,6 +13,7 @@ beforeAll(()  => {
         redirectLimit: 0,
         httpsOnly: true,
         https2AdaptiveWindow: true,
+        verbose: true,
     });
 });
 

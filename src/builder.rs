@@ -129,6 +129,7 @@ impl Builder {
         let mut rm = boxed.borrow_mut();
 
         let mut cb = rm.0.take().unwrap();
+        cb.client = cb.client.connection_verbose(enabled);
         cb.verbose = enabled;
 
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
