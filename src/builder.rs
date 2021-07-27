@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
-use log::LevelFilter;
 use env_logger::Builder as LoggerBuilder;
+use log::LevelFilter;
 
 use neon::prelude::*;
 
@@ -143,16 +143,14 @@ impl Builder {
                 cb.client = cb.client.connection_verbose(true);
 
                 LevelFilter::Trace
-            },
+            }
 
             _ => LevelFilter::Info,
         };
 
         // Since texts only have one global rust-fetch instance,
         // a global logger instance should be fine, also needed to capture connection verbose.
-        LoggerBuilder::new()
-            .filter_level(cb.log_level)
-            .init();
+        LoggerBuilder::new().filter_level(cb.log_level).init();
 
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
     }
