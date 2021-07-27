@@ -48,14 +48,8 @@ export interface ClientOptions {
     /**
      * Logging level.
      *
-     * Defaults to 3.
+     * Defaults to info.
      *
-     * 0 - Off
-     * 1 - Error
-     * 2 - Warn
-     * 3 - Info
-     * 4 - Debug
-     * 5 - Trace
      */
     logLevel?: LogLevel;
 }
@@ -128,6 +122,7 @@ export class Client {
         let builder = builderNew();
 
         options = options ?? {};
+        options.logLevel = options.logLevel ?? LogLevel.Info;
 
         if (options.connectTimeout) {
             builder = builderConnectTimeout.call(builder, options.connectTimeout);
