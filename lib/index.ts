@@ -11,7 +11,7 @@ const {
     builderRedirectLimit,
     builderHttpsOnly,
     builderHttps2AdaptiveWindow,
-    builderVerbose,
+    builderLogLevel,
     builderBuild,
 } = require('../index.node');
 
@@ -46,9 +46,27 @@ export interface ClientOptions {
     https2AdaptiveWindow?: boolean;
 
     /**
-     * Enable verbose logging.
+     * Logging level.
+     *
+     * Defaults to 3.
+     *
+     * 0 - Off
+     * 1 - Error
+     * 2 - Warn
+     * 3 - Info
+     * 4 - Debug
+     * 5 - Trace
      */
-    verbose?: boolean;
+    logLevel?: LogLevel;
+}
+
+export enum LogLevel {
+    Off = 0,
+    Error = 1,
+    Warn = 2,
+    Info = 3,
+    Debug = 4,
+    Trace = 5,
 }
 
 export interface RequestOptions {
@@ -132,9 +150,7 @@ export class Client {
             builder = builderHttps2AdaptiveWindow.call(builder, options.https2AdaptiveWindow);
         }
 
-        if (options.verbose) {
-            builder = builderVerbose.call(builder, options.verbose);
-        }
+        builder = builderLogLevel.call(builder, options.logLevel);
 
         this.#client = builderBuild.call(builder);
     }
