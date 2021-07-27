@@ -11,6 +11,7 @@ const {
     builderRedirectLimit,
     builderHttpsOnly,
     builderHttps2AdaptiveWindow,
+    builderVerbose,
     builderBuild,
 } = require('../index.node');
 
@@ -129,6 +130,10 @@ export class Client {
 
         if (options.https2AdaptiveWindow) {
             builder = builderHttps2AdaptiveWindow.call(builder, options.https2AdaptiveWindow);
+        }
+
+        if (options.verbose) {
+            builder = builderVerbose.call(builder, options.verbose);
         }
 
         this.#client = builderBuild.call(builder);
