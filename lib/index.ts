@@ -43,6 +43,11 @@ export interface ClientOptions {
      * Use adaptive window size for https2
      */
     https2AdaptiveWindow?: boolean;
+
+    /**
+     * Enable verbose logging.
+     */
+    verbose?: boolean;
 }
 
 export interface RequestOptions {
