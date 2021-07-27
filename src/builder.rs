@@ -150,7 +150,7 @@ impl Builder {
 
         // Since texts only have one global rust-fetch instance,
         // a global logger instance should be fine, also needed to capture connection verbose.
-        LoggerBuilder::new().filter_level(cb.log_level).init();
+        LoggerBuilder::new().filter_level(cb.log_level).try_init().ok();
 
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
     }
