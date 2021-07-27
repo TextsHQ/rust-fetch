@@ -20,6 +20,8 @@ pub struct Client {
     pub(crate) runtime: Runtime,
 
     pub(crate) client: ReqwestClient,
+
+    pub(crate) verbose: bool,
 }
 
 pub enum ResponseType {
@@ -337,10 +339,13 @@ impl Client {
         let queue = cx.channel();
 
         this.runtime.spawn(async move {
-            let res = FutureRetry::new(|| builder.try_clone().unwrap().send(), Attempter::new(method, attempts))
-                .await
-                .map_err(|(e, _attempt)| e)
-                .map(|(r, _attempt)| r);
+            let res = FutureRetry::new(
+                || builder.try_clone().unwrap().send(),
+                Attempter::new(method, attempts),
+            )
+            .await
+            .map_err(|(e, _attempt)| e)
+            .map(|(r, _attempt)| r);
 
             let res = Self::map_response(res, response_type).await;
 
@@ -411,10 +416,12 @@ impl ErrorHandler<Error> for Attempter {
 
                 // https://github.com/sindresorhus/got/#retry
                 match status.as_u16() {
-                    408 | 413 | 429 | 500 | 502 |  503 | 504 | 521 | 522 | 524 => RetryPolicy::WaitRetry(RETRY_DURATION),
+                    408 | 413 | 429 | 500 | 502 | 503 | 504 | 521 | 522 | 524 => {
+                        RetryPolicy::WaitRetry(RETRY_DURATION)
+                    }
                     _ => RetryPolicy::ForwardError(e),
                 }
-            },
+            }
 
             _ => RetryPolicy::ForwardError(e),
         }
