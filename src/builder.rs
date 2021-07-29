@@ -160,7 +160,9 @@ impl Builder {
 
         let mut rm = boxed.borrow_mut();
 
-        let cb = rm.0.take().unwrap();
+        let mut cb = rm.0.take().unwrap();
+
+        cb.client = cb.client.http2_initial_stream_window_size(1024 * 256 * 24);
 
         let client = cb.client.build().unwrap();
 

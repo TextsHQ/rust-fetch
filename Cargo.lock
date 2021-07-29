@@ -678,7 +678,6 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 [[package]]
 name = "reqwest"
 version = "0.11.4"
-source = "git+https://github.com/TextsHQ/reqwest?branch=fingerprint#e6a1a09f0904e06de4ff1317278798c4ed28af66"
 dependencies = [
  "async-compression",
  "base64",
@@ -728,7 +727,7 @@ dependencies = [
 
 [[package]]
 name = "rust-fetch"
-version = "0.6.11"
+version = "0.6.13"
 dependencies = [
  "bytes",
  "env_logger",

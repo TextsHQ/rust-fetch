@@ -15,7 +15,7 @@
 :path
 ```
 
-### Rust-fetch 0.6.11
+### Rust-fetch 0.6.12
 ```
 [SETTINGS_MAX_CONCURRENT_STREAMS(0x03):100]
 [SETTINGS_ENABLE_PUSH(0x02):0]
@@ -28,4 +28,9 @@
 :scheme
 :authority
 :path
+```
+
+### Rust-fetch 0.6.13
+```
+
 ```
