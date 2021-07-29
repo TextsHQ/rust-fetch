@@ -8,6 +8,11 @@
 [SETTINGS_MAX_HEADER_LIST_SIZE(0x06):262144]
 
 (window_size_increment=15663105)
+
+:method
+:authority
+:scheme
+:path
 ```
 
 ### Rust-fetch 0.6.11
@@ -18,4 +23,9 @@
 [SETTINGS_MAX_FRAME_SIZE(0x05):16384]
 
 (window_size_increment=5177345)
+
+:method
+:scheme
+:authority
+:path
 ```
