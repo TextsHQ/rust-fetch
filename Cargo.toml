@@ -21,7 +21,7 @@ features = ["rt-multi-thread"]
 [dependencies.reqwest]
 version = "0.11"
 default-features = false
-features = ["rustls-tls", "gzip", "brotli"]
+features = ["rustls-tls-native-roots", "gzip", "brotli"]
 
 [dependencies.neon]
 git = "https://github.com/neon-bindings/neon"
