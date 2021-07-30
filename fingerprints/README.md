@@ -40,7 +40,7 @@
 (window_size_increment=5177345)
 
 :method
-:scheme
 :authority
+:scheme
 :path
 ```
