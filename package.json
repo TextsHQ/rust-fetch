@@ -24,7 +24,7 @@
         "install": "node-pre-gyp install --fallback-to-build=false",
         "package": "node-pre-gyp package",
         "upload-binary": "node-pre-gyp-github publish",
-        "test": "jest tests"
+        "test": "jest"
     },
     "devDependencies": {
         "@types/jest": "^26.0.23",

@@ -34,4 +34,4 @@ lto = "fat"
 codegen-units = 1
 
 [patch.crates-io]
-reqwest = { path = "../reqwest" }
+reqwest = { git = "https://github.com/TextsHQ/reqwest", branch = "master" }
