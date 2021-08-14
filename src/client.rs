@@ -466,8 +466,8 @@ impl ErrorHandler<Error> for Attempter {
             }
 
             _ => {
-                debug!("Request error, forwarding error: {}", &e);
-                RetryPolicy::ForwardError(e)
+                debug!("Request error: {}, retrying", &e);
+                RetryPolicy::WaitRetry(RETRY_DURATION)
             }
         }
     }
