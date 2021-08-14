@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.6.12"
+version = "0.6.13"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 
@@ -21,7 +21,7 @@ features = ["rt-multi-thread"]
 [dependencies.reqwest]
 version = "0.11"
 default-features = false
-features = ["rustls-tls", "gzip", "brotli"]
+features = ["rustls-tls-native-roots", "gzip", "brotli"]
 
 [dependencies.neon]
 git = "https://github.com/neon-bindings/neon"
@@ -32,3 +32,6 @@ features = ["napi-6", "event-queue-api", "try-catch-api"]
 [profile.release]
 lto = "fat"
 codegen-units = 1
+
+[patch.crates-io]
+reqwest = { git = "https://github.com/TextsHQ/reqwest", branch = "master" }
