@@ -73,7 +73,7 @@ jobs:
       run: yarn build --target=${{ matrix.target }}
 
     - name: Strip binary
-      run: strip -ru index.node
+      run: strip index.node
 
     - name: Test
       run: yarn test
@@ -148,9 +148,6 @@ jobs:
 
     - name: Build
       run: yarn build --target=${{ matrix.target }}
-
-    - name: Strip binary
-      run: strip -ru index.node
 
     - name: Test
       run: yarn test
