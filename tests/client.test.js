@@ -14,6 +14,7 @@ beforeAll(()  => {
         httpsOnly: true,
         https2AdaptiveWindow: true,
         logLevel: LogLevel.Debug,
+        stripSensitiveHeaders: true,
     });
 });
 
@@ -136,7 +137,7 @@ test('Request multi-part', async () => {
     expect(ret_2.body.length).toBeGreaterThan(10000);
 });
 
-test('Response binary data', async() => {
+test('Response binary data', async () => {
     let ret = await client.request('https://httpbin.org/image/webp', {
         responseType: 'binary',
     });

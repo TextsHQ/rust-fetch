@@ -10,6 +10,7 @@ const {
     builderRequestTimeout,
     builderRedirectLimit,
     builderHttpsOnly,
+    builderStripSensitiveHeaders,
     builderHttps2AdaptiveWindow,
     builderLogLevel,
     builderBuild,
@@ -39,6 +40,13 @@ export interface ClientOptions {
      * Https only
      */
     httpsOnly?: boolean;
+
+    /**
+     * Whether to strip sensitive headers such as authorization, etc.
+     *
+     * Defaults to false.
+     */
+    stripSensitiveHeaders?: boolean;
 
     /**
      * Use adaptive window size for https2
@@ -139,6 +147,10 @@ export class Client {
 
         if (options.httpsOnly) {
             builder = builderHttpsOnly.call(builder, options.httpsOnly);
+        }
+
+        if (options.stripSensitiveHeaders) {
+            builder = builderStripSensitiveHeaders.call(builder, options.stripSensitiveHeaders);
         }
 
         if (options.https2AdaptiveWindow) {

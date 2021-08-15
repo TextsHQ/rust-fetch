@@ -92,6 +92,19 @@ impl Builder {
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
     }
 
+    pub fn js_strip_sensitive_headers(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let strip = cx.argument::<JsBoolean>(0)?.value(&mut cx);
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let mut cb = rm.0.take().unwrap();
+        cb.client = cb.client.strip_sensitive_headers(strip);
+
+        Ok(JsBox::new(&mut cx, Self::containerize(cb)))
+    }
+
     pub fn js_redirect_limit(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
         let limit = cx.argument::<JsNumber>(0)?.value(&mut cx) as usize;
 
