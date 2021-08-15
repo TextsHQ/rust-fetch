@@ -10,6 +10,7 @@ const {
     builderRequestTimeout,
     builderRedirectLimit,
     builderHttpsOnly,
+    builderStripSensitiveHeaders,
     builderHttps2AdaptiveWindow,
     builderLogLevel,
     builderBuild,
@@ -146,6 +147,10 @@ export class Client {
 
         if (options.httpsOnly) {
             builder = builderHttpsOnly.call(builder, options.httpsOnly);
+        }
+
+        if (options.builderStripSensitiveHeaders) {
+            builder = builderStripSensitiveHeaders.call(builder, options.builderStripSensitiveHeaders);
         }
 
         if (options.https2AdaptiveWindow) {
