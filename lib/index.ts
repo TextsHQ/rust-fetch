@@ -46,7 +46,7 @@ export interface ClientOptions {
      *
      * Defaults to false.
      */
-    builderStripSensitiveHeaders?: boolean;
+    stripSensitiveHeaders?: boolean;
 
     /**
      * Use adaptive window size for https2
@@ -149,8 +149,8 @@ export class Client {
             builder = builderHttpsOnly.call(builder, options.httpsOnly);
         }
 
-        if (options.builderStripSensitiveHeaders) {
-            builder = builderStripSensitiveHeaders.call(builder, options.builderStripSensitiveHeaders);
+        if (options.stripSensitiveHeaders) {
+            builder = builderStripSensitiveHeaders.call(builder, options.stripSensitiveHeaders);
         }
 
         if (options.https2AdaptiveWindow) {

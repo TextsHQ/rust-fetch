@@ -14,6 +14,7 @@ beforeAll(()  => {
         httpsOnly: true,
         https2AdaptiveWindow: true,
         logLevel: LogLevel.Debug,
+        stripSensitiveHeaders: true,
     });
 });
 
