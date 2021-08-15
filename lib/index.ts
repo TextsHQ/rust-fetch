@@ -41,6 +41,13 @@ export interface ClientOptions {
     httpsOnly?: boolean;
 
     /**
+     * Whether to strip sensitive headers such as authorization, etc.
+     *
+     * Defaults to false.
+     */
+    builderStripSensitiveHeaders?: boolean;
+
+    /**
      * Use adaptive window size for https2
      */
     https2AdaptiveWindow?: boolean;

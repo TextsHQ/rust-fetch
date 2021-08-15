@@ -17,6 +17,7 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("builderRequestTimeout", Builder::js_request_timeout)?;
     cx.export_function("builderRedirectLimit", Builder::js_redirect_limit)?;
     cx.export_function("builderHttpsOnly", Builder::js_https_only)?;
+    cx.export_function("builderStripSensitiveHeaders", Builder::js_strip_sensitive_headers)?;
     cx.export_function(
         "builderHttps2AdaptiveWindow",
         Builder::js_http2_adaptive_window,
