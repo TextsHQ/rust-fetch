@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.6.14"
+version = "0.6.15"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 
