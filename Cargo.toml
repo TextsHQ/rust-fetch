@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.6.15"
+version = "0.6.16"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 
@@ -22,7 +22,7 @@ features = ["rt-multi-thread"]
 git = "https://github.com/TextsHQ/reqwest"
 branch = "master"
 default-features = false
-features = ["rustls-tls-native-roots", "gzip", "brotli"]
+features = ["native-tls-alpn", "gzip", "brotli"]
 
 [dependencies.neon]
 git = "https://github.com/neon-bindings/neon"
