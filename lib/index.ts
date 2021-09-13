@@ -14,7 +14,7 @@ const {
     builderHttps2AdaptiveWindow,
     builderLogLevel,
     builderBuild,
-} = require('../index.node');
+} = require('../builds/napi-6/index.node');
 
 const requestPromise = promisify(clientRequest);
 
