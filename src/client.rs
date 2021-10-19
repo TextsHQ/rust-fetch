@@ -95,7 +95,8 @@ impl Client {
                 }
 
                 _ if v.is_a::<JsObject, _>(cx) => {
-                    cx.throw_error("Object cannot be passed as a value")?;
+                    let key = n.value(cx);
+                    cx.throw_error(format!("Object cannot be passed as a value, key: {}", key))?;
                 }
 
                 _ => {}
