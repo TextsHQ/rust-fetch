@@ -11,7 +11,7 @@ pub type NewCookies = (String, Vec<String>);
 
 /// Time based jar.
 ///
-/// The motivation behind is that we cannot set a dedicate jar for each request.
+/// The motivation behind this is that we cannot set a dedicated jar for each request.
 /// And recreating the client for each request seems wasteful.
 ///
 /// Therefore we need to track cookies by time to fetch cookies since request time.
