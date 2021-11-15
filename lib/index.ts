@@ -121,6 +121,13 @@ export interface Response<T> {
      * Each header may have more than one value in the value array.
      */
     headers: Record<string, string | string[]>;
+
+    /**
+     * New cookies present since request time.
+     *
+     * URL => cookies[]
+     */
+    newCookies: Record<string, string[]>;
 }
 
 export class Client {
@@ -179,16 +186,12 @@ export class Client {
             args.body = (<FormData> args.body).getBuffer();
         }
 
-        const res = await requestPromise.call(this.#client, url, args);
+        const res: Response<T> = await requestPromise.call(this.#client, url, args);
 
-        for (const [k, v] of Object.entries(res.headers)) {
-            if (args.cookieJar && k === 'set-cookie') {
-                if (Array.isArray(v)) {
-                    for (const item of v as string[]) {
-                        args.cookieJar.setCookieSync(item, url);
-                    }
-                } else {
-                    args.cookieJar.setCookieSync(v as string, url);
+        if (args.cookieJar) {
+            for (const [k, v] of Object.entries(res.newCookies)) {
+                for (const item of v) {
+                    args.cookieJar.setCookieSync(item, k);
                 }
             }
         }
