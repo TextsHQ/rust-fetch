@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::str::FromStr;
-use std::time::Duration;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use bytes::Bytes;
 
@@ -15,12 +16,16 @@ use tokio::runtime::Runtime;
 use reqwest::header::HeaderMap;
 use reqwest::{Body, Client as ReqwestClient, Error, Method, Response};
 
+use crate::time_jar::{TimeJar, NewCookies};
+
 pub const RETRY_DURATION: Duration = Duration::from_millis(200);
 
 pub struct Client {
     pub(crate) runtime: Runtime,
 
     pub(crate) client: ReqwestClient,
+
+    pub(crate) time_jar: Arc<TimeJar>,
 }
 
 #[derive(Debug)]
@@ -62,6 +67,8 @@ pub struct CallbackPayload {
     content_length: Option<f64>,
 
     data: DataType,
+
+    new_cookies: Vec<NewCookies>,
 }
 
 impl Finalize for Client {}
@@ -151,6 +158,7 @@ impl Client {
     pub async fn map_response(
         res: Result<Response, reqwest::Error>,
         response_type: ResponseType,
+        new_cookies: Vec<NewCookies>,
     ) -> Result<CallbackPayload, reqwest::Error> {
         match res {
             Ok(res) => {
@@ -190,6 +198,7 @@ impl Client {
                     headers,
                     content_length,
                     data,
+                    new_cookies,
                 })
             }
 
@@ -231,6 +240,24 @@ impl Client {
             h
         };
 
+        let new_cookies = {
+            let h = JsObject::new(cx);
+
+            for (k, v) in payload.new_cookies {
+                let val = JsArray::new(cx, v.len() as u32);
+
+                for (i, entry) in v.iter().enumerate() {
+                    let z = cx.string(entry.to_string());
+
+                    val.set(cx, i as u32, z)?;
+                }
+
+                h.set(cx, k.as_ref(), val)?;
+            }
+
+            h
+        };
+
         if let Some(content_length) = payload.content_length {
             let val = cx.number(content_length);
 
@@ -265,6 +292,7 @@ impl Client {
         obj.set(cx, "statusCode", status)?;
         obj.set(cx, "httpVersion", http_version)?;
         obj.set(cx, "headers", headers)?;
+        obj.set(cx, "newCookies", new_cookies)?;
 
         Ok(obj)
     }
@@ -356,7 +384,11 @@ impl Client {
 
         let queue = cx.channel();
 
+        let time_jar = this.time_jar.clone();
+
         this.runtime.spawn(async move {
+            let request_time = Instant::now();
+
             let res = FutureRetry::new(
                 || builder.try_clone().unwrap().send(),
                 Attempter::new(method, attempts),
@@ -371,7 +403,9 @@ impl Client {
                 r
             });
 
-            let res = Self::map_response(res, response_type).await;
+            let new_cookies = time_jar.cookies_since(request_time);
+
+            let res = Self::map_response(res, response_type, new_cookies).await;
 
             queue.send(|mut cx| {
                 let cb = callback.into_inner(&mut cx);

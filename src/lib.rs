@@ -4,6 +4,7 @@ use neon::prelude::*;
 
 mod builder;
 mod client;
+mod time_jar;
 
 use builder::Builder;
 use client::Client;

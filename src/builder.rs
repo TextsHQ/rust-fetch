@@ -11,6 +11,7 @@ use reqwest::redirect::Policy;
 use reqwest::ClientBuilder;
 
 use crate::client::Client;
+use crate::time_jar::TimeJar;
 
 pub struct Builder(Option<BuilderInner>);
 
@@ -177,6 +178,10 @@ impl Builder {
 
         cb.client = cb.client.http2_initial_stream_window_size(1024 * 256 * 24);
 
+        let time_jar = std::sync::Arc::new(TimeJar::default());
+
+        cb.client = cb.client.cookie_provider(time_jar.clone());
+
         let client = cb.client.build().unwrap();
 
         Ok(JsBox::new(
@@ -184,6 +189,7 @@ impl Builder {
             Client {
                 runtime: Runtime::new().unwrap(),
                 client,
+                time_jar,
             },
         ))
     }

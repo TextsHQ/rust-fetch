@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.6.18"
+version = "0.6.19"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 
@@ -22,7 +22,8 @@ features = ["rt-multi-thread"]
 git = "https://github.com/TextsHQ/reqwest"
 branch = "master"
 default-features = false
-features = ["native-tls-alpn", "gzip", "brotli"]
+# Cookies is used for the time_jar in order to invoke pre-redirect headers sets in reqwest.
+features = ["native-tls-alpn", "gzip", "brotli", "cookies"]
 
 [dependencies.neon]
 git = "https://github.com/neon-bindings/neon"
