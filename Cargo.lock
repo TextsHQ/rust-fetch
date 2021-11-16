@@ -906,7 +906,7 @@ dependencies = [
 
 [[package]]
 name = "rust-fetch"
-version = "0.6.19"
+version = "0.7.0"
 dependencies = [
  "bytes",
  "env_logger",
