@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 14.x ]
+        node-version: [ 16.x ]
         target:
           - x86_64-unknown-linux-gnu
         include:
@@ -65,13 +65,6 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-
-    - name: Git Credentials
-      run: |
-        git config --global url."https://api:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
-        git config --global url."https://ssh:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "ssh://git@github.com/"
-        git config --global url."https://git:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "git@github.com:"
-        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" > ~/.npmrc
 
     - name: Install dependencies
       run: yarn --ignore-scripts
