@@ -8,7 +8,7 @@ use neon::prelude::*;
 use tokio::runtime::Runtime;
 
 use reqwest::redirect::Policy;
-use reqwest::ClientBuilder;
+use reqwest::{ClientBuilder, Proxy};
 
 use crate::client::Client;
 use crate::time_jar::TimeJar;
@@ -134,6 +134,19 @@ impl Builder {
 
         let mut cb = rm.0.take().unwrap();
         cb.client = cb.client.http2_adaptive_window(enabled);
+
+        Ok(JsBox::new(&mut cx, Self::containerize(cb)))
+    }
+
+    pub fn js_proxy(mut cx: FunctionContext) -> JsResult<BoxedBuilder> {
+        let proxy = cx.argument::<JsString>(0)?.value(&mut cx);
+
+        let boxed = cx.this().downcast_or_throw::<BoxedBuilder, _>(&mut cx)?;
+
+        let mut rm = boxed.borrow_mut();
+
+        let mut cb = rm.0.take().unwrap();
+        cb.client = cb.client.proxy(Proxy::all(proxy).unwrap());
 
         Ok(JsBox::new(&mut cx, Self::containerize(cb)))
     }
