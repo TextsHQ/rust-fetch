@@ -89,7 +89,7 @@ export interface RequestOptions {
      *
      * Retries for connection errors.
      *
-     * Default: 2
+     * Default: 4
      */
     attempts?: number;
 
