@@ -12,6 +12,7 @@ const {
     builderHttpsOnly,
     builderStripSensitiveHeaders,
     builderHttps2AdaptiveWindow,
+    builderProxy,
     builderLogLevel,
     builderBuild,
 } = require('../rf.node');
@@ -52,6 +53,13 @@ export interface ClientOptions {
      * Use adaptive window size for https2
      */
     https2AdaptiveWindow?: boolean;
+
+    /**
+     * Proxy URL.
+     *
+     * Http(s) and socks5 proxies are supported.
+     */
+    proxy?: string;
 
     /**
      * Logging level.
@@ -162,6 +170,10 @@ export class Client {
 
         if (options.https2AdaptiveWindow) {
             builder = builderHttps2AdaptiveWindow.call(builder, options.https2AdaptiveWindow);
+        }
+
+        if (options.proxy) {
+            builder = builderProxy.call(builder, options.proxy);
         }
 
         builder = builderLogLevel.call(builder, options.logLevel);
