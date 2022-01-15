@@ -184,7 +184,7 @@ export class Client {
     public async request<T>(url: string, args: RequestOptions = {}): Promise<Response<T>> {
         args.method = args.method ?? 'GET';
         args.responseType = args.responseType ?? 'text';
-        args.attempts = args.attempts ?? 2;
+        args.attempts = args.attempts ?? 4;
 
         if (args.cookieJar) {
             const cookie = args.cookieJar.getCookieStringSync(url);
