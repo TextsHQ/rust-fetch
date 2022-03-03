@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# TODO: ios simulator support
 import os
 import sys
 import optparse
