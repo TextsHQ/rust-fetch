@@ -1,0 +1,13 @@
+.github
+build
+!dist
+fingerprints
+lib
+!src
+target
+tests
+.editorconfig
+.gitattributes
+.gitignore
+!rf.node
+!tsconfig.json
