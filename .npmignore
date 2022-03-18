@@ -2,7 +2,7 @@
 build
 !dist
 fingerprints
-lib
+!lib
 !src
 target
 tests
