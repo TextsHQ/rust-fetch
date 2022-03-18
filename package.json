@@ -10,6 +10,7 @@
     "scripts": {
         "build-rust": "cargo-cp-artifact -nc rf.node -- cargo build --message-format=json-render-diagnostics",
         "build": "tsc && yarn build-rust --release",
+        "postinstall": "tsc",
         "test": "jest"
     },
     "devDependencies": {
