@@ -34,3 +34,4 @@ features = ["napi-6", "event-queue-api", "try-catch-api"]
 [profile.release]
 lto = "fat"
 codegen-units = 1
+strip = true
