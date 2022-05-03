@@ -72,9 +72,6 @@ jobs:
     - name: Build
       run: yarn build --target=${{ matrix.target }}
 
-    - name: Strip binary
-      run: strip rf.node
-
     - name: Test
       run: yarn test
 
@@ -226,9 +223,6 @@ jobs:
 
     - name: Build
       run: yarn build --target=${{ matrix.target }}
-
-    - name: Strip binary
-      run: strip -ru rf.node
 
       # Until GH action adds M1 runners, can't run aarch64 libs
     - name: Test
