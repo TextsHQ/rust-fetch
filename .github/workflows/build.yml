@@ -72,9 +72,6 @@ jobs:
     - name: Build
       run: yarn build --target=${{ matrix.target }}
 
-    - name: Strip binary
-      run: strip rf.node
-
     - name: Test
       run: yarn test
 
@@ -163,6 +160,7 @@ jobs:
     env:
       NODE_PRE_GYP_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       CARGO_NET_GIT_FETCH_WITH_CLI: true
+      MACOSX_DEPLOYMENT_TARGET: 10.11
 
     strategy:
       matrix:
@@ -225,9 +223,6 @@ jobs:
 
     - name: Build
       run: yarn build --target=${{ matrix.target }}
-
-    - name: Strip binary
-      run: strip -ru rf.node
 
       # Until GH action adds M1 runners, can't run aarch64 libs
     - name: Test

@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.7.3"
+version = "0.7.6"
 authors = ["rumblefrog <contact@zhenyangli.me>"]
 edition = "2018"
 
@@ -34,3 +34,4 @@ features = ["napi-6", "event-queue-api", "try-catch-api"]
 [profile.release]
 lto = "fat"
 codegen-units = 1
+strip = true
