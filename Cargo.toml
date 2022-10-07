@@ -26,8 +26,7 @@ default-features = false
 features = ["native-tls-alpn", "gzip", "brotli", "cookies", "socks"]
 
 [dependencies.neon]
-git = "https://github.com/neon-bindings/neon"
-branch = "main"
+version = "0.9.1"
 default-features = false
 features = ["napi-6", "event-queue-api", "try-catch-api"]
 
