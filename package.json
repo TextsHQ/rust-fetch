@@ -1,6 +1,6 @@
 {
     "name": "rust-fetch",
-    "version": "0.7.7",
+    "version": "0.7.8",
     "description": "Rust HTTP wrapper for JS",
     "main": "dist/index.js",
     "repository": {
