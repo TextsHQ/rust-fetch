@@ -1,8 +1,8 @@
 name: Build
 on:
   push:
-    paths:
-      - 'release_build.txt'
+    tags:
+    - '*'
 
 env:
   NODE_PRE_GYP_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
