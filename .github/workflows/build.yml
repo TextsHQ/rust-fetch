@@ -25,6 +25,14 @@ jobs:
 
         architecture:
         - x64
+        - arm64
+
+        # Don't build arm64 bins for windows and ubuntu
+        exclude:
+        - os: ubuntu-latest
+          architecture: arm64
+        - os: windows-latest
+          architecture: arm64
 
         include:
         - os: ubuntu-latest
