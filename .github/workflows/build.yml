@@ -15,20 +15,31 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        node-version: [ 18.x ]
+        node-version:
+        - 18.x
+
+        os:
+        - ubuntu-latest
+        - windows-latest
+        - macos-latest
+
+        architecture:
+        - x64
+
         include:
         - os: ubuntu-latest
           target: x86_64-unknown-linux-gnu
-          architecture: x64
+
         - os: windows-latest
           target: x86_64-pc-windows-msvc
-          architecture: x64
+
         - os: macos-latest
+          architecture: x64
           target: x86_64-apple-darwin
-          architecture: x64
+
         - os: macos-latest
-          target: aarch64-apple-darwin
           architecture: arm64
+          target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.os }}
 
