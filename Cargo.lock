@@ -458,7 +458,7 @@ dependencies = [
 [[package]]
 name = "hyper-rustls"
 version = "0.23.2"
-source = "git+https://github.com/TextsHQ/hyper-rustls#32b481a76e52371cca4a21638d10f19d39c75093"
+source = "git+https://github.com/TextsHQ/hyper-rustls#aedeaadf84c101f721e935147f6fb97e5f5acb88"
 dependencies = [
  "http",
  "hyper",
@@ -783,6 +783,8 @@ dependencies = [
  "log",
  "neon",
  "reqwest",
+ "rustls",
+ "rustls-native-certs",
  "static_vcruntime",
  "tokio",
 ]

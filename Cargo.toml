@@ -13,6 +13,7 @@ bytes = "1"
 env_logger = "0.9"
 futures-retry = "0.6"
 static_vcruntime = "1"
+rustls-native-certs = "0.6"
 
 [dependencies.tokio]
 version = "1"
@@ -24,6 +25,10 @@ branch = "master"
 default-features = false
 # Cookies is used for the time_jar in order to invoke pre-redirect headers sets in reqwest.
 features = ["rustls-tls-native-roots", "gzip", "brotli", "cookies", "socks"]
+
+[dependencies.rustls]
+version = "0.20"
+features = ["dangerous_configuration"]
 
 [dependencies.neon]
 version = "0.9.1"
