@@ -1,6 +1,6 @@
 {
     "name": "rust-fetch",
-    "version": "0.7.6",
+    "version": "0.7.9",
     "description": "Rust HTTP wrapper for JS",
     "main": "dist/index.js",
     "repository": {
@@ -14,16 +14,17 @@
         "test": "jest"
     },
     "devDependencies": {
-        "express": "^4.17.1",
+        "express": "^4.18.2",
         "jest": "^27.0.4"
     },
     "dependencies": {
         "@types/jest": "^26.0.23",
-        "@types/tough-cookie": "^4.0.0",
+        "@types/tough-cookie": "^4.0.2",
         "cargo-cp-artifact": "^0.1",
         "form-data": "^4.0.0",
         "node-gyp": "^9.0.0",
-        "tough-cookie": "^4.0.0",
-        "typescript": "^4.3.2"
+        "npggha": "https://github.com/TextsHQ/npggha",
+        "tough-cookie": "^4.1.2",
+        "typescript": "^5.0.2"
     }
 }
