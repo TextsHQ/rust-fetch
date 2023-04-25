@@ -246,7 +246,7 @@ impl Client {
                 let val = JsArray::new(cx, v.len() as u32);
 
                 for (i, entry) in v.iter().enumerate() {
-                    let z = cx.string(entry.to_string());
+                    let z = cx.string(entry);
 
                     val.set(cx, i as u32, z)?;
                 }
