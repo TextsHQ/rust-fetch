@@ -3,6 +3,7 @@
     "version": "0.8.0",
     "description": "Rust HTTP wrapper for JS",
     "main": "dist/index.js",
+    "license": "UNLICENSED",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/TextsHQ/rust-fetch.git"
