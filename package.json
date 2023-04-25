@@ -3,6 +3,7 @@
     "version": "0.8.0",
     "description": "Rust HTTP wrapper for JS",
     "main": "dist/index.js",
+    "license": "UNLICENSED",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/TextsHQ/rust-fetch.git"
@@ -21,22 +22,27 @@
         "install": "concurrently \"npggha\" \"HTTP_PROXY=http://localhost:9191 node-pre-gyp install --fallback-to-build=false\"",
         "package": "node-pre-gyp package",
         "upload-binary": "node-pre-gyp-github publish",
-        "test": "jest"
+        "test": "jest",
+        "lint": "eslint lib tests --ext ts,tsx,js,jsx --cache && cargo clippy --all -- -D warnings",
+        "lint:fix": "eslint lib tests --ext ts,tsx,js,jsx --cache --fix && cargo clippy --all -- -D warnings --fix"
     },
     "devDependencies": {
+        "@textshq/eslint-config": "https://github.com/TextsHQ/eslint-config#main",
         "@types/jest": "^26.0.23",
         "@types/tough-cookie": "^4.0.2",
         "cargo-cp-artifact": "^0.1",
         "concurrently": "^6.4.0",
+        "eslint": "^8.39.0",
+        "eslint-plugin-jest": "^27.2.1",
         "express": "^4.18.2",
-        "form-data": "^4.0.0",
         "jest": "^27.0.4",
         "node-pre-gyp-github": "https://github.com/rumblefrog/node-pre-gyp-github.git",
         "npggha": "https://github.com/TextsHQ/npggha",
-        "tough-cookie": "^4.1.2",
         "typescript": "^5.0.2"
     },
     "dependencies": {
-        "node-pre-gyp": "^0.17.0"
+        "form-data": "^4.0.0",
+        "node-pre-gyp": "^0.17.0",
+        "tough-cookie": "^4.1.2"
     }
 }
