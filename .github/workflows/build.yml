@@ -13,7 +13,7 @@ jobs:
   build:
     name: Build ${{ matrix.target }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         node-version:
         - 18.x
