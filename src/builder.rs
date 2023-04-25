@@ -7,6 +7,8 @@ use neon::prelude::*;
 
 use tokio::runtime::Runtime;
 
+use rustls::ClientConfig;
+
 use reqwest::redirect::Policy;
 use reqwest::{ClientBuilder, Proxy};
 
@@ -194,6 +196,53 @@ impl Builder {
         let time_jar = std::sync::Arc::new(TimeJar::default());
 
         cb.client = cb.client.cookie_provider(time_jar.clone());
+
+        cb.client = cb.client.use_preconfigured_tls({
+            let mut config = ClientConfig::builder()
+                .with_cipher_suites(&[
+                    // GREASE
+                    rustls::cipher_suite::TLS13_AES_128_GCM_SHA256,
+                    rustls::cipher_suite::TLS13_AES_256_GCM_SHA384,
+                    rustls::cipher_suite::TLS13_CHACHA20_POLY1305_SHA256,
+                    rustls::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+                    rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+                    rustls::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+                    rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+                    rustls::cipher_suite::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+                    rustls::cipher_suite::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+                    // unsupported
+                    // rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+                    // rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+                    // rustls::cipher_suite::TLS_RSA_WITH_AES_128_GCM_SHA256,
+                    // rustls::cipher_suite::TLS_RSA_WITH_AES_256_GCM_SHA384,
+                    // rustls::cipher_suite::TLS_RSA_WITH_AES_128_CBC_SHA,
+                    // rustls::cipher_suite::TLS_RSA_WITH_AES_256_CBC_SHA,
+                ])
+                .with_kx_groups(&[
+                    // GREASE
+                    &rustls::kx_group::X25519,
+                    &rustls::kx_group::SECP256R1,
+                    &rustls::kx_group::SECP384R1,
+                ])
+                .with_protocol_versions(&[
+                    // GREASE
+                    &rustls::version::TLS12,
+                    &rustls::version::TLS13,
+                ])
+                .unwrap()
+                .with_root_certificates({
+                    let mut roots = rustls::RootCertStore::empty();
+                    for cert in rustls_native_certs::load_native_certs().expect("could not load platform certs") {
+                        roots
+                            .add(&rustls::Certificate(cert.0))
+                            .unwrap();
+                    }
+                    roots
+                })
+                .with_no_client_auth();
+            config.alpn_protocols = vec!["h2".into(), "http/1.1".into()];
+            config
+        });
 
         let client = cb.client.build().unwrap();
 
