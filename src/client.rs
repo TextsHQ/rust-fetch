@@ -11,6 +11,7 @@ use futures_retry::{ErrorHandler, FutureRetry, RetryPolicy};
 
 use log::{debug, trace};
 use neon::prelude::*;
+use neon::types::buffer::TypedArray;
 
 use tokio::runtime::Runtime;
 
@@ -85,9 +86,9 @@ impl Client {
         let names = obj.get_own_property_names(cx)?;
 
         for i in 0..names.len(cx) {
-            let n = names.get(cx, i)?.downcast::<JsString, _>(cx).or_throw(cx)?;
+            let n: Handle<JsString> = names.get(cx, i)?;
 
-            let v = obj.get(cx, n)?;
+            let v = obj.get_value(cx, n)?;
 
             match v {
                 _ if v.is_a::<JsString, _>(cx) => {
@@ -124,7 +125,7 @@ impl Client {
         let names = obj.get_own_property_names(cx)?;
 
         for i in 0..names.len(cx) {
-            let n = names.get(cx, i)?.downcast::<JsString, _>(cx).or_throw(cx)?;
+            let n: Handle<JsString> = names.get(cx, i)?;
 
             map.insert(n.value(cx), ());
         }
@@ -142,12 +143,9 @@ impl Client {
             Ok(Some(Body::from(body)))
         } else if body.is_a::<JsBuffer, _>(cx) {
             let body = body.downcast_or_throw::<JsBuffer, _>(cx)?;
+            let v: Vec<u8> = Vec::from(body.as_slice(cx));
 
-            cx.borrow(&body, |data| {
-                let v: Vec<u8> = Vec::from(data.as_slice());
-
-                Ok(Some(Body::from(v)))
-            })
+            Ok(Some(Body::from(v)))
         } else {
             Ok(None)
         }
@@ -275,11 +273,8 @@ impl Client {
             DataType::Binary(v) if v.is_some() => {
                 let val = v.unwrap();
 
-                let mut buf = JsBuffer::new(cx, val.len() as u32)?;
-
-                cx.borrow_mut(&mut buf, |data| {
-                    data.as_mut_slice::<u8>().copy_from_slice(&val);
-                });
+                let mut buf= JsBuffer::new(cx, val.len())?;
+                buf.as_mut_slice(cx).copy_from_slice(&val);
 
                 obj.set(cx, "body", buf)?;
             }
@@ -307,18 +302,9 @@ impl Client {
 
         let keys = Self::object_keys(&mut cx, &args)?;
 
-        let method = Method::from_str(
-            &args
-                .get(&mut cx, "method")?
-                .downcast_or_throw::<JsString, _>(&mut cx)?
-                .value(&mut cx),
-        )
-        .unwrap();
+        let method = Method::from_str(&args.get::<JsString, _, _>(&mut cx, "method")?.value(&mut cx)).unwrap();
 
-        let attempts = args
-            .get(&mut cx, "attempts")?
-            .downcast_or_throw::<JsNumber, _>(&mut cx)?
-            .value(&mut cx) as usize;
+        let attempts = args.get::<JsNumber, _, _>(&mut cx, "attempts")?.value(&mut cx) as usize;
 
         debug!(
             "Received {} request to {} with {} attempts",
@@ -328,9 +314,7 @@ impl Client {
         let mut builder = this.client.request(method.clone(), url);
 
         if keys.contains_key("headers") {
-            let headers = args
-                .get(&mut cx, "headers")?
-                .downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let headers: Handle<JsObject> = args.get(&mut cx, "headers")?;
             let headers = Self::map_jsobject(&mut cx, &headers)?;
             let headers: HeaderMap = match (&headers).try_into() {
                 Ok(v) => v,
@@ -352,9 +336,7 @@ impl Client {
         }
 
         if keys.contains_key("searchParams") {
-            let search_params = args
-                .get(&mut cx, "searchParams")?
-                .downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let search_params: Handle<JsObject> = args.get(&mut cx, "searchParams")?;
             let search_params = Self::map_jsobject(&mut cx, &search_params)?;
 
             debug!("Request queries: {:?}", &search_params);
@@ -363,9 +345,7 @@ impl Client {
         }
 
         if keys.contains_key("form") {
-            let form = args
-                .get(&mut cx, "form")?
-                .downcast_or_throw::<JsObject, _>(&mut cx)?;
+            let form: Handle<JsObject> = args.get(&mut cx, "form")?;
             let form = Self::map_jsobject(&mut cx, &form)?;
 
             debug!("Request form: {:?}", form);
@@ -373,13 +353,7 @@ impl Client {
             builder = builder.form(&form);
         }
 
-        let response_type = ResponseType::from_str(
-            &args
-                .get(&mut cx, "responseType")?
-                .downcast_or_throw::<JsString, _>(&mut cx)?
-                .value(&mut cx),
-        )
-        .unwrap();
+        let response_type = ResponseType::from_str(&args.get::<JsString, _, _>(&mut cx, "responseType")?.value(&mut cx)).unwrap();
 
         debug!("Request response type: {:?}", &response_type);
 
