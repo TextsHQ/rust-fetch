@@ -44,6 +44,7 @@ describe('Request methods', () => {
   const methods = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
 
   for (const method of methods) {
+    // eslint-disable-next-line @typescript-eslint/no-loop-func
     test(method, async () => {
       const ret = await client.request(`https://httpbin.org/${method.toLowerCase()}`, {
         method,
