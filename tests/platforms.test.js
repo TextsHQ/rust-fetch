@@ -1,29 +1,29 @@
-const { Client, LogLevel } = require('../dist');
+const { Client, LogLevel } = require('../dist')
 
-jest.setTimeout(10e3);
+jest.setTimeout(10e3)
 
-let client;
+let client
 
-beforeAll(()  => {
-    client = new Client({
-        connectTimeout: 5,
-        requestTimeout: 5,
-        redirectLimit: 2,
-        httpsOnly: true,
-        https2AdaptiveWindow: true,
-        logLevel: LogLevel.Debug,
-        stripSensitiveHeaders: false,
-    });
-});
+beforeAll(() => {
+  client = new Client({
+    connectTimeout: 5,
+    requestTimeout: 5,
+    redirectLimit: 2,
+    httpsOnly: true,
+    https2AdaptiveWindow: true,
+    logLevel: LogLevel.Debug,
+    stripSensitiveHeaders: false,
+  })
+})
 
 // http2 error: protocol error: unspecific protocol error detected
 test('Facebook graph server', async () => {
-    let ret = await client.request('https://b-graph.facebook.com', {
-        headers: {
-            'Authorization': 'foo',
-            'bar': 'foo',
-        }
-    });
+  const ret = await client.request('https://b-graph.facebook.com', {
+    headers: {
+      Authorization: 'foo',
+      bar: 'foo',
+    },
+  })
 
-    expect(ret.statusCode).toBe(400);
-});
+  expect(ret.statusCode).toBe(400)
+})

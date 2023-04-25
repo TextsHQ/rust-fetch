@@ -33,14 +33,14 @@
         "concurrently": "^6.4.0",
         "eslint": "^8.39.0",
         "express": "^4.18.2",
-        "form-data": "^4.0.0",
         "jest": "^27.0.4",
         "node-pre-gyp-github": "https://github.com/rumblefrog/node-pre-gyp-github.git",
         "npggha": "https://github.com/TextsHQ/npggha",
-        "tough-cookie": "^4.1.2",
         "typescript": "^5.0.2"
     },
     "dependencies": {
-        "node-pre-gyp": "^0.17.0"
+        "form-data": "^4.0.0",
+        "node-pre-gyp": "^0.17.0",
+        "tough-cookie": "^4.1.2"
     }
 }

@@ -1,45 +1,46 @@
-const { CookieJar } = require('tough-cookie');
-const express = require('express');
-const { Client } = require('../dist');
+const { CookieJar } = require('tough-cookie')
+const express = require('express')
+const { Client } = require('../dist')
 
-let client, server;
+let client; let
+  server
 
-beforeAll(()  => {
-    client = new Client({
-        connectTimeout: 5,
-        requestTimeout: 5,
-        redirectLimit: 5,
-        httpsOnly: false,
-        https2AdaptiveWindow: false,
-    });
+beforeAll(() => {
+  client = new Client({
+    connectTimeout: 5,
+    requestTimeout: 5,
+    redirectLimit: 5,
+    httpsOnly: false,
+    https2AdaptiveWindow: false,
+  })
 
-    let app = express();
+  const app = express()
 
-    app.get('/', (_req, res) => {
-        res.cookie('cookie-monster', 'redirect-persist').redirect('/done');
-    });
+  app.get('/', (_req, res) => {
+    res.cookie('cookie-monster', 'redirect-persist').redirect('/done')
+  })
 
-    app.get('/done', (_req, res) => {
-        res.json({ ok: true });
-    })
+  app.get('/done', (_req, res) => {
+    res.json({ ok: true })
+  })
 
-    server = app.listen(3005);
-});
+  server = app.listen(3005)
+})
 
 test('Cookie should persist after redirect', async () => {
-    let jar = new CookieJar();
+  const jar = new CookieJar()
 
-    let ret = await client.request('http://127.0.0.1:3005', {
-        cookieJar: jar,
-    });
+  const ret = await client.request('http://127.0.0.1:3005', {
+    cookieJar: jar,
+  })
 
-    expect(ret.statusCode).toBe(200);
+  expect(ret.statusCode).toBe(200)
 
-    const cookieStr = jar.getCookieStringSync('http://127.0.0.1:3000');
+  const cookieStr = jar.getCookieStringSync('http://127.0.0.1:3000')
 
-    expect(cookieStr).toBe('cookie-monster=redirect-persist');
-});
+  expect(cookieStr).toBe('cookie-monster=redirect-persist')
+})
 
 afterAll(() => {
-    server.close();
-});
+  server.close()
+})
