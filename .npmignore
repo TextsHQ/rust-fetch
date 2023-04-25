@@ -11,3 +11,4 @@ tests
 .gitignore
 !rf.node
 !tsconfig.json
+.eslintcache

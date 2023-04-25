@@ -1,0 +1,4 @@
+extends: '@textshq/eslint-config/base.yml'
+parserOptions:
+  project: ./tsconfig.json
+
