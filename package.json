@@ -22,8 +22,8 @@
         "package": "node-pre-gyp package",
         "upload-binary": "node-pre-gyp-github publish",
         "test": "jest",
-        "lint": "eslint lib tests --ext ts,tsx,js,jsx --cache",
-        "lint:fix": "eslint lib tests --ext ts,tsx,js,jsx --fix"
+        "lint": "eslint lib tests --ext ts,tsx,js,jsx --cache && cargo clippy --all -- -D warnings",
+        "lint:fix": "eslint lib tests --ext ts,tsx,js,jsx --cache --fix && cargo clippy --all -- -D warnings --fix"
     },
     "devDependencies": {
         "@textshq/eslint-config": "https://github.com/TextsHQ/eslint-config#main",
