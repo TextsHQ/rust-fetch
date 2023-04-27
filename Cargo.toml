@@ -23,7 +23,7 @@ git = "https://github.com/TextsHQ/reqwest"
 branch = "master"
 default-features = false
 # Cookies is used for the time_jar in order to invoke pre-redirect headers sets in reqwest.
-features = ["rustls-tls-native-roots", "gzip", "brotli", "cookies", "socks"]
+features = ["rustls-tls", "gzip", "brotli", "cookies", "socks"]
 
 [dependencies.rustls]
 version = "0.20"
