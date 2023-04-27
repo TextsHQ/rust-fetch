@@ -1,7 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.7.8"
-authors = ["rumblefrog <contact@zhenyangli.me>"]
+version = "0.8.1"
 edition = "2018"
 
 [lib]
@@ -24,14 +23,14 @@ git = "https://github.com/TextsHQ/reqwest"
 branch = "master"
 default-features = false
 # Cookies is used for the time_jar in order to invoke pre-redirect headers sets in reqwest.
-features = ["rustls-tls-native-roots", "gzip", "brotli", "cookies", "socks"]
+features = ["rustls-tls", "gzip", "brotli", "cookies", "socks"]
 
 [dependencies.rustls]
 version = "0.20"
 features = ["dangerous_configuration"]
 
 [dependencies.neon]
-version = "0.9.1"
+version = "0.10.1"
 default-features = false
 features = ["napi-6", "event-queue-api", "try-catch-api"]
 

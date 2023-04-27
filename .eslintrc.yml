@@ -1,0 +1,9 @@
+extends: '@textshq/eslint-config/base.yml'
+parserOptions:
+  project: ./tsconfig.json
+plugins:
+  - jest
+overrides:
+  - files: "tests/*.js"
+    env:
+      "jest/globals": true
