@@ -237,13 +237,21 @@ impl Builder {
                 ])
                 .unwrap()
                 .with_root_certificates({
-                    let mut roots = rustls::RootCertStore::empty();
-                    for cert in rustls_native_certs::load_native_certs().expect("could not load platform certs") {
-                        roots
-                            .add(&rustls::Certificate(cert.0))
-                            .unwrap();
-                    }
-                    roots
+                    use rustls::OwnedTrustAnchor;
+
+                    let mut root_cert_store = rustls::RootCertStore::empty();
+
+                    let trust_anchors =
+                        webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|trust_anchor| {
+                            OwnedTrustAnchor::from_subject_spki_name_constraints(
+                                trust_anchor.subject,
+                                trust_anchor.spki,
+                                trust_anchor.name_constraints,
+                            )
+                        });
+
+                    root_cert_store.add_server_trust_anchors(trust_anchors);
+                    root_cert_store
                 })
                 .with_no_client_auth();
             config.alpn_protocols = vec!["h2".into(), "http/1.1".into()];
