@@ -231,12 +231,32 @@ impl Builder {
                 ])
                 .unwrap()
                 .with_root_certificates({
-                    let mut roots = rustls::RootCertStore::empty();
+                    let mut valid_count = 0;
+                    let mut invalid_count = 0;
+                    let mut roots: rustls::RootCertStore = rustls::RootCertStore::empty();
+
                     for cert in rustls_native_certs::load_native_certs().expect("could not load platform certs") {
-                        roots
-                            .add(&rustls::Certificate(cert.0))
-                            .unwrap();
+                        let cert = rustls::Certificate(cert.0);
+
+                        match roots.add(&cert) {
+                            Ok(_) => valid_count += 1,
+                            Err(err) => {
+                                invalid_count += 1;
+                                log::warn!(
+                                    "rustls failed to parse DER certificate {:?} {:?}",
+                                    &err,
+                                    &cert
+                                )
+                            }
+                        }
                     }
+
+                    log::info!(
+                        "rustls added {} valid certificates and {} invalid certificates",
+                        valid_count,
+                        invalid_count
+                    );
+
                     roots
                 })
                 .with_no_client_auth();
