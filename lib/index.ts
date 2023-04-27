@@ -189,13 +189,13 @@ export class Client {
     if (args.cookieJar) {
       const cookie = args.cookieJar.getCookieStringSync(url)
 
-      options.headers = { ...args.headers, Cookie: cookie }
+      options.headers = { ...options.headers, Cookie: cookie }
     }
 
     if (args.body?.constructor.name === 'FormData') {
-      options.headers = (<FormData> args.body).getHeaders(args.headers)
+      options.headers = (args.body as FormData).getHeaders(args.headers)
 
-      options.body = (<FormData> args.body).getBuffer()
+      options.body = (args.body as FormData).getBuffer()
     }
 
     const res: Response<T> = await requestPromise.call(this.#client, url, options)
