@@ -12,7 +12,7 @@ bytes = "1"
 env_logger = "0.9"
 futures-retry = "0.6"
 static_vcruntime = "1"
-rustls-native-certs = { git = "https://github.com/TextsHQ/rustls-native-certs" }
+webpki-roots = "0.23"
 
 [dependencies.tokio]
 version = "1"

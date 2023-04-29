@@ -237,35 +237,20 @@ impl Builder {
                 ])
                 .unwrap()
                 .with_root_certificates({
+                    use rustls::OwnedTrustAnchor;
+
                     let mut root_cert_store = rustls::RootCertStore::empty();
 
-                    let mut valid_count = 0;
-                    let mut invalid_count = 0;
+                    let trust_anchors =
+                        webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|trust_anchor| {
+                            OwnedTrustAnchor::from_subject_spki_name_constraints(
+                                trust_anchor.subject,
+                                trust_anchor.spki,
+                                trust_anchor.name_constraints,
+                            )
+                        });
 
-                    for cert in rustls_native_certs::load_native_certs().unwrap() {
-                        let cert = rustls::Certificate(cert.0);
-                        // Continue on parsing errors, as native stores often include ancient or syntactically
-                        // invalid certificates, like root certificates without any X509 extensions.
-                        // Inspiration: https://github.com/rustls/rustls/blob/633bf4ba9d9521a95f68766d04c22e2b01e68318/rustls/src/anchors.rs#L105-L112
-                        match root_cert_store.add(&cert) {
-                            Ok(_) => valid_count += 1,
-                            Err(err) => {
-                                invalid_count += 1;
-                                log::warn!(
-                                    "rustls failed to parse DER certificate {:?} {:?}",
-                                    &err,
-                                    &cert
-                                );
-                            }
-                        }
-                    }
-
-                    log::info!(
-                        "rustls_native_certs loaded {} valid certificates and {} invalid certificates",
-                        valid_count,
-                        invalid_count
-                    );
-
+                    root_cert_store.add_server_trust_anchors(trust_anchors);
                     root_cert_store
                 })
                 .with_no_client_auth();
