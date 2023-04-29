@@ -1,6 +1,6 @@
 [package]
 name = "rust-fetch"
-version = "0.8.2"
+version = "0.8.5"
 edition = "2018"
 
 [lib]
@@ -9,7 +9,7 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 log = "0.4"
 bytes = "1"
-env_logger = "0.9"
+env_logger = "0.10"
 futures-retry = "0.6"
 static_vcruntime = "1"
 webpki-roots = "0.23"
