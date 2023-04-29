@@ -273,8 +273,13 @@ impl Client {
             DataType::Binary(v) if v.is_some() => {
                 let val = v.unwrap();
 
-                let mut buf= JsBuffer::new(cx, val.len())?;
-                buf.as_mut_slice(cx).copy_from_slice(&val);
+                let mut buf= JsBuffer::new(cx, val.len()).unwrap();
+
+                let lock = cx.lock();
+                match buf.try_borrow_mut(&lock) {
+                    Ok(mut dest) => dest.copy_from_slice(&val),
+                    Err(error) => log::error!("Error while copying buffer: {:?}", error)
+                }
 
                 obj.set(cx, "body", buf)?;
             }
