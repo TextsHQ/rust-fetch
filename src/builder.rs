@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::env;
 
 use env_logger::Builder as LoggerBuilder;
 use log::LevelFilter;
@@ -257,6 +258,15 @@ impl Builder {
             config.alpn_protocols = vec!["h2".into(), "http/1.1".into()];
             config
         });
+
+        match env::var("NODE_TLS_REJECT_UNAUTHORIZED") {
+            Ok(value) => {
+                if value == "0" {
+                    cb.client = cb.client.danger_accept_invalid_certs(true);
+                }
+            },
+            Err(_) => {}
+        }
 
         let client = cb.client.build().unwrap();
 
