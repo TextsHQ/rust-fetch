@@ -8,8 +8,6 @@ use neon::prelude::*;
 
 use tokio::runtime::Runtime;
 
-use rustls::ClientConfig;
-
 use reqwest::redirect::Policy;
 use reqwest::{ClientBuilder, Proxy};
 
@@ -197,76 +195,6 @@ impl Builder {
         let time_jar = std::sync::Arc::new(TimeJar::default());
 
         cb.client = cb.client.cookie_provider(time_jar.clone());
-
-        cb.client = cb.client.use_preconfigured_tls({
-            let mut config = ClientConfig::builder()
-                .with_cipher_suites(&[
-                    // GREASE
-                    rustls::cipher_suite::TLS13_AES_128_GCM_SHA256,
-                    rustls::cipher_suite::TLS13_AES_256_GCM_SHA384,
-                    rustls::cipher_suite::TLS13_CHACHA20_POLY1305_SHA256,
-                    rustls::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-                    rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-                    rustls::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-                    rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-                    rustls::cipher_suite::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-                    rustls::cipher_suite::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-                    // unsupported
-                    // rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-                    // rustls::cipher_suite::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-                    // rustls::cipher_suite::TLS_RSA_WITH_AES_128_GCM_SHA256,
-                    // rustls::cipher_suite::TLS_RSA_WITH_AES_256_GCM_SHA384,
-                    // rustls::cipher_suite::TLS_RSA_WITH_AES_128_CBC_SHA,
-                    // rustls::cipher_suite::TLS_RSA_WITH_AES_256_CBC_SHA,
-                ])
-                .with_kx_groups(&[
-                    // GREASE
-                    &rustls::kx_group::X25519,
-                    &rustls::kx_group::SECP256R1,
-                    &rustls::kx_group::SECP384R1,
-                ])
-                .with_protocol_versions(&[
-                    // GREASE
-                    &rustls::version::TLS12,
-                    &rustls::version::TLS13,
-                ])
-                .unwrap()
-                .with_root_certificates({
-                    let mut root_cert_store = rustls::RootCertStore::empty();
-
-                    let mut valid_count = 0;
-                    let mut invalid_count = 0;
-
-                    for cert in rustls_native_certs::load_native_certs().unwrap() {
-                        let cert = rustls::Certificate(cert.0);
-                        // Continue on parsing errors, as native stores often include ancient or syntactically
-                        // invalid certificates, like root certificates without any X509 extensions.
-                        // Inspiration: https://github.com/rustls/rustls/blob/633bf4ba9d9521a95f68766d04c22e2b01e68318/rustls/src/anchors.rs#L105-L112
-                        match root_cert_store.add(&cert) {
-                            Ok(_) => valid_count += 1,
-                            Err(err) => {
-                                invalid_count += 1;
-                                log::warn!(
-                                    "rustls failed to parse DER certificate {:?} {:?}",
-                                    &err,
-                                    &cert
-                                );
-                            }
-                        }
-                    }
-
-                    log::info!(
-                        "rustls_native_certs loaded {} valid certificates and {} invalid certificates",
-                        valid_count,
-                        invalid_count
-                    );
-
-                    root_cert_store
-                })
-                .with_no_client_auth();
-            config.alpn_protocols = vec!["h2".into(), "http/1.1".into()];
-            config
-        });
 
         match env::var("NODE_TLS_REJECT_UNAUTHORIZED") {
             Ok(value) => {

@@ -193,7 +193,7 @@ export class Client {
     }
 
     if (args.body?.constructor.name === 'FormData') {
-      options.headers =  (args.body as FormData).getHeaders(options.headers)
+      options.headers = (args.body as FormData).getHeaders(options.headers)
 
       options.body = (args.body as FormData).getBuffer()
     }
