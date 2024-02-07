@@ -19,9 +19,9 @@ jobs:
         - 18.x
 
         os:
-        # - ubuntu-latest
+        - ubuntu-latest
         - windows-latest
-        # - macos-latest
+        - macos-latest
 
         architecture:
         - x64
@@ -35,19 +35,19 @@ jobs:
           architecture: arm64
 
         include:
-        # - os: ubuntu-latest
-        #   target: x86_64-unknown-linux-gnu
+        - os: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
 
         - os: windows-latest
           target: x86_64-pc-windows-msvc
 
-        # - os: macos-latest
-        #   architecture: x64
-        #   target: x86_64-apple-darwin
+        - os: macos-latest
+          architecture: x64
+          target: x86_64-apple-darwin
 
-        # - os: macos-latest
-        #   architecture: arm64
-        #   target: aarch64-apple-darwin
+        - os: macos-latest
+          architecture: arm64
+          target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.os }}
 
@@ -91,9 +91,9 @@ jobs:
       run: yarn build --config net.git-fetch-with-cli=true --target=${{ matrix.target }}
 
     # Until GH action adds M1 runners, can't run aarch64 libs
-    # - name: Test
-    #   if: ${{ matrix.architecture == 'x64' }}
-    #   run: yarn test
+    - name: Test
+      if: ${{ matrix.architecture == 'x64' }}
+      run: yarn test
 
     - name: Publish
       if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
