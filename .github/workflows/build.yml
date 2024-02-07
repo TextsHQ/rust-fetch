@@ -60,10 +60,8 @@ jobs:
         fetch-depth: 1
 
     - name: Configure git for private repos
-      env:
-        TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+        git config --global url."https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
     - name: Cache cargo registry
       uses: actions/cache@v2
