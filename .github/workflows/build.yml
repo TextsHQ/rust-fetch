@@ -55,35 +55,24 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 1
 
     - name: Configure git for private repos
-      env:
-        TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+        git config --global url."https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-    - name: Cache cargo registry
-      uses: actions/cache@v2
+    - name: Cache cargo
+      uses: actions/cache@v4
       with:
-        path: ~/.cargo/registry
-        key: cargo-registry-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
+        key: cargo-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/bin
+          target
 
-    - name: Cache cargo bin
-      uses: actions/cache@v2
-      with:
-        path: ~/.cargo/bin
-        key: cargo-bin-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
-
-    - name: Cache cargo build
-      uses: actions/cache@v2
-      with:
-        path: target
-        key: cargo-build-target-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
-
-    - name: Install latest Rust stable
+    - name: Setup Rust
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
@@ -91,9 +80,10 @@ jobs:
         override: true
 
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: yarn
 
     - name: Install dependencies
       run: yarn --ignore-scripts
@@ -101,12 +91,13 @@ jobs:
     - name: Build
       run: yarn build --target=${{ matrix.target }}
 
-      # Until GH action adds M1 runners, can't run aarch64 libs
+    # Until GH action adds M1 runners, can't run aarch64 libs
     - name: Test
       if: ${{ matrix.architecture == 'x64' }}
       run: yarn test
 
     - name: Publish
+      if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
       run: |
         yarn package --target_arch=${{ matrix.architecture }}
         yarn upload-binary
