@@ -7,6 +7,7 @@ on:
 
 env:
   NODE_PRE_GYP_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
   MACOSX_DEPLOYMENT_TARGET: 10.11
 
 jobs:
@@ -88,7 +89,7 @@ jobs:
       run: yarn --ignore-scripts
 
     - name: Build
-      run: yarn build --config net.git-fetch-with-cli=true --target=${{ matrix.target }}
+      run: yarn build --target=${{ matrix.target }}
 
     # Until GH action adds M1 runners, can't run aarch64 libs
     - name: Test
